@@ -33,7 +33,7 @@ class Chef
 
         def load_current_resource
           @current_resource = Chef::Resource::Package.new(new_resource.name)
-          @current_resource.package_name(new_resource.package_name)
+          current_resource.package_name(new_resource.package_name)
 
           category, pkg = %r{^#{PACKAGE_NAME_PATTERN}$}.match(new_resource.package_name)[1, 2]
 
@@ -53,11 +53,11 @@ class Chef
               raise Chef::Exceptions::Package, "Multiple packages found for #{new_resource.package_name}: #{atoms.join(" ")}. Specify a category."
             end
           elsif versions.size == 1
-            @current_resource.version(versions.first.last)
+            current_resource.version(versions.first.last)
             Chef::Log.debug("#{new_resource} current version #{$1}")
           end
 
-          @current_resource
+          current_resource
         end
 
         def parse_emerge(package, txt)

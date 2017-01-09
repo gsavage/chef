@@ -184,7 +184,7 @@ class Chef
           end
 
           @current_resource = Chef::Resource::YumPackage.new(new_resource.name)
-          @current_resource.package_name(new_resource.package_name)
+          current_resource.package_name(new_resource.package_name)
 
           installed_version = []
           @candidate_version = []
@@ -198,12 +198,12 @@ class Chef
             shell_out_with_timeout!("rpm -qp --queryformat '%{NAME} %{VERSION}-%{RELEASE}\n' #{new_resource.source}", :timeout => Chef::Config[:yum_timeout]).stdout.each_line do |line|
               case line
               when /^(\S+)\s(\S+)$/
-                @current_resource.package_name($1)
+                current_resource.package_name($1)
                 new_resource.version($2)
               end
             end
             @candidate_version << new_resource.version
-            installed_version << @yum.installed_version(@current_resource.package_name, arch)
+            installed_version << @yum.installed_version(current_resource.package_name, arch)
           else
 
             package_name_array.each_with_index do |pkg, idx|
@@ -239,17 +239,17 @@ class Chef
           end
 
           if installed_version.size == 1
-            @current_resource.version(installed_version[0])
+            current_resource.version(installed_version[0])
             @candidate_version = @candidate_version[0]
             @arch = @arch[0]
           else
-            @current_resource.version(installed_version)
+            current_resource.version(installed_version)
           end
 
           Chef::Log.debug("#{new_resource} installed version: #{installed_version || "(none)"} candidate version: " +
                           "#{@candidate_version || "(none)"}")
 
-          @current_resource
+          current_resource
         end
 
         def install_remote_package(name, version)
@@ -341,7 +341,7 @@ class Chef
         # Hacky - better overall solution? Custom compare in Package provider?
         def action_upgrade
           # Could be uninstalled or have no candidate
-          if @current_resource.version.nil? || !candidate_version_array.any?
+          if current_resource.version.nil? || !candidate_version_array.any?
             super
           elsif candidate_version_array.zip(current_version_array).any? do |c, i|
                   RPMVersion.parse(c) > RPMVersion.parse(i)

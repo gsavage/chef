@@ -30,7 +30,7 @@ class Chef
 
         def load_current_resource
           @current_resource = Chef::Resource::Package.new(new_resource.name)
-          @current_resource.package_name(new_resource.package_name)
+          current_resource.package_name(new_resource.package_name)
 
           Chef::Log.debug("#{new_resource} checking pacman for #{new_resource.package_name}")
           status = shell_out_with_timeout("pacman -Qi #{new_resource.package_name}")
@@ -38,7 +38,7 @@ class Chef
             case line
             when /^Version(\s?)*: (.+)$/
               Chef::Log.debug("#{new_resource} current version is #{$2}")
-              @current_resource.version($2)
+              current_resource.version($2)
             end
           end
 
@@ -46,7 +46,7 @@ class Chef
             raise Chef::Exceptions::Package, "pacman failed - #{status.inspect}!"
           end
 
-          @current_resource
+          current_resource
         end
 
         def candidate_version

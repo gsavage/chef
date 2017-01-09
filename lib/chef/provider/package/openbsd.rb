@@ -42,9 +42,9 @@ class Chef
         end
 
         def load_current_resource
-          @current_resource.package_name(new_resource.package_name)
-          @current_resource.version(installed_version)
-          @current_resource
+          current_resource.package_name(new_resource.package_name)
+          current_resource.version(installed_version)
+          current_resource
         end
 
         def define_resource_requirements
@@ -68,7 +68,7 @@ class Chef
         end
 
         def install_package(name, version)
-          unless @current_resource.version
+          unless current_resource.version
             if parts = name.match(/^(.+?)--(.+)/) # use double-dash for stems with flavors, see man page for pkg_add
               name = parts[1]
             end

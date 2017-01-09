@@ -66,7 +66,7 @@ class Chef
 
         def load_current_resource
           @current_resource = Chef::Resource::Package.new(new_resource.name)
-          @current_resource.package_name(new_resource.package_name)
+          current_resource.package_name(new_resource.package_name)
 
           # get the currently installed version if installed
           package_version = nil
@@ -93,13 +93,13 @@ class Chef
 
           if package_version == new_resource.version
             Chef::Log.debug("#{new_resource} at version #{new_resource.version}")
-            @current_resource.version(new_resource.version)
+            current_resource.version(new_resource.version)
           else
             Chef::Log.debug("#{new_resource} at version #{package_version}")
-            @current_resource.version(package_version)
+            current_resource.version(package_version)
           end
 
-          @current_resource
+          current_resource
         end
 
         def candidate_version

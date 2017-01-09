@@ -475,11 +475,11 @@ class Chef
 
         def load_current_resource
           @current_resource = Chef::Resource::Package::GemPackage.new(new_resource.name)
-          @current_resource.package_name(new_resource.package_name)
+          current_resource.package_name(new_resource.package_name)
           if current_spec = current_version
-            @current_resource.version(current_spec.version.to_s)
+            current_resource.version(current_spec.version.to_s)
           end
-          @current_resource
+          current_resource
         end
 
         def cleanup_after_converge

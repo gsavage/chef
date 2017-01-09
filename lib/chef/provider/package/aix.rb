@@ -46,7 +46,7 @@ class Chef
 
         def load_current_resource
           @current_resource = Chef::Resource::Package.new(new_resource.name)
-          @current_resource.package_name(new_resource.package_name)
+          current_resource.package_name(new_resource.package_name)
 
           if package_source_found?
             Chef::Log.debug("#{new_resource} checking pkg status")
@@ -66,13 +66,13 @@ class Chef
           end
 
           Chef::Log.debug("#{new_resource} checking install state")
-          ret = shell_out_with_timeout("lslpp -lcq #{@current_resource.package_name}")
+          ret = shell_out_with_timeout("lslpp -lcq #{current_resource.package_name}")
           ret.stdout.each_line do |line|
             case line
-            when /#{@current_resource.package_name}/
+            when /#{current_resource.package_name}/
               fields = line.split(":")
               Chef::Log.debug("#{new_resource} version #{fields[2]} is already installed")
-              @current_resource.version(fields[2])
+              current_resource.version(fields[2])
             end
           end
 
@@ -80,7 +80,7 @@ class Chef
             raise Chef::Exceptions::Package, "lslpp failed - #{ret.format_for_exception}!"
           end
 
-          @current_resource
+          current_resource
         end
 
         def candidate_version

@@ -50,7 +50,7 @@ class Chef
 
         def load_current_resource
           @current_resource = Chef::Resource::Package.new(new_resource.name)
-          @current_resource.package_name(new_resource.package_name)
+          current_resource.package_name(new_resource.package_name)
 
           if new_resource.source
             @package_source_found = ::File.exists?(new_resource.source)
@@ -66,12 +66,12 @@ class Chef
           end
 
           Chef::Log.debug("#{new_resource} checking install state")
-          status = shell_out_with_timeout("pkginfo -l #{@current_resource.package_name}")
+          status = shell_out_with_timeout("pkginfo -l #{current_resource.package_name}")
           status.stdout.each_line do |line|
             case line
             when /VERSION:\s+(.+)/
               Chef::Log.debug("#{new_resource} version #{$1} is already installed")
-              @current_resource.version($1)
+              current_resource.version($1)
             end
           end
 
@@ -79,7 +79,7 @@ class Chef
             raise Chef::Exceptions::Package, "pkginfo failed - #{status.inspect}!"
           end
 
-          @current_resource
+          current_resource
         end
 
         def candidate_version

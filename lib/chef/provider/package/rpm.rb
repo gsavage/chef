@@ -49,7 +49,7 @@ class Chef
           @package_source_exists = true
 
           @current_resource = Chef::Resource::Package.new(new_resource.name)
-          @current_resource.package_name(new_resource.package_name)
+          current_resource.package_name(new_resource.package_name)
 
           if new_resource.source
             unless uri_scheme?(new_resource.source) || ::File.exists?(new_resource.source)
@@ -61,7 +61,7 @@ class Chef
             shell_out_with_timeout!("rpm -qp --queryformat '%{NAME} %{VERSION}-%{RELEASE}\n' #{new_resource.source}").stdout.each_line do |line|
               case line
               when /^(\S+)\s(\S+)$/
-                @current_resource.package_name($1)
+                current_resource.package_name($1)
                 new_resource.version($2)
                 @candidate_version = $2
               end
@@ -74,20 +74,20 @@ class Chef
           end
 
           Chef::Log.debug("#{new_resource} checking install state")
-          @rpm_status = shell_out_with_timeout("rpm -q --queryformat '%{NAME} %{VERSION}-%{RELEASE}\n' #{@current_resource.package_name}")
+          @rpm_status = shell_out_with_timeout("rpm -q --queryformat '%{NAME} %{VERSION}-%{RELEASE}\n' #{current_resource.package_name}")
           @rpm_status.stdout.each_line do |line|
             case line
             when /^(\S+)\s(\S+)$/
               Chef::Log.debug("#{new_resource} current version is #{$2}")
-              @current_resource.version($2)
+              current_resource.version($2)
             end
           end
 
-          @current_resource
+          current_resource
         end
 
         def install_package(name, version)
-          unless @current_resource.version
+          unless current_resource.version
             shell_out_with_timeout!( "rpm #{new_resource.options} -i #{new_resource.source}" )
           else
             if allow_downgrade

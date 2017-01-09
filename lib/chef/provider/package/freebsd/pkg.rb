@@ -30,7 +30,7 @@ class Chef
           include PortsHelper
 
           def install_package(name, version)
-            unless @current_resource.version
+            unless current_resource.version
               case new_resource.source
               when /^http/, /^ftp/
                 if new_resource.source =~ /\/$/
@@ -51,7 +51,7 @@ class Chef
           end
 
           def remove_package(name, version)
-            shell_out_with_timeout!("pkg_delete #{package_name}-#{version || @current_resource.version}", :env => nil).status
+            shell_out_with_timeout!("pkg_delete #{package_name}-#{version || current_resource.version}", :env => nil).status
           end
 
           # The name of the package (without the version number) as understood by pkg_add and pkg_info.
@@ -88,7 +88,7 @@ class Chef
           end
 
           def file_candidate_version_path
-            Dir[Chef::Util::PathHelper.escape_glob_dir("#{new_resource.source}/#{@current_resource.package_name}") + "*"][-1].to_s
+            Dir[Chef::Util::PathHelper.escape_glob_dir("#{new_resource.source}/#{current_resource.package_name}") + "*"][-1].to_s
           end
 
           def file_candidate_version

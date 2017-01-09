@@ -25,7 +25,7 @@ class Chef
         class Pkgng < Base
 
           def install_package(name, version)
-            unless @current_resource.version
+            unless current_resource.version
               case new_resource.source
               when /^(http|ftp|\/)/
                 shell_out_with_timeout!("pkg add#{expand_options(new_resource.options)} #{new_resource.source}", :env => { "LC_ALL" => nil }).status

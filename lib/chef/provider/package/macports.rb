@@ -8,10 +8,10 @@ class Chef
 
         def load_current_resource
           @current_resource = Chef::Resource::Package.new(new_resource.name)
-          @current_resource.package_name(new_resource.package_name)
+          current_resource.package_name(new_resource.package_name)
 
-          @current_resource.version(current_installed_version)
-          Chef::Log.debug("#{new_resource} current version is #{@current_resource.version}") if @current_resource.version
+          current_resource.version(current_installed_version)
+          Chef::Log.debug("#{new_resource} current version is #{current_resource.version}") if current_resource.version
 
           @candidate_version = macports_candidate_version
 
@@ -21,7 +21,7 @@ class Chef
 
           Chef::Log.debug("#{new_resource} candidate version is #{@candidate_version}") if @candidate_version
 
-          @current_resource
+          current_resource
         end
 
         def current_installed_version
@@ -46,7 +46,7 @@ class Chef
         end
 
         def install_package(name, version)
-          unless @current_resource.version == version
+          unless current_resource.version == version
             command = "port#{expand_options(new_resource.options)} install #{name}"
             command << " @#{version}" if version && !version.empty?
             shell_out_with_timeout!(command)
@@ -69,7 +69,7 @@ class Chef
         def upgrade_package(name, version)
           # Saving this to a variable -- weird rSpec behavior
           # happens otherwise...
-          current_version = @current_resource.version
+          current_version = current_resource.version
 
           if current_version.nil? || current_version.empty?
             # Macports doesn't like when you upgrade a package
