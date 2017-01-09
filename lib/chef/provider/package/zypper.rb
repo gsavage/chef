@@ -84,7 +84,7 @@ class Chef
               islocked = true
             end
           end
-          return islocked
+          islocked
         end
 
         def load_current_resource
@@ -151,8 +151,8 @@ class Chef
           when false
             "--no-gpg-checks"
           when nil
-            Chef::Log.warn("Chef::Config[:zypper_check_gpg] was not set. " +
-              "All packages will be installed without gpg signature checks. " +
+            Chef::Log.warn("Chef::Config[:zypper_check_gpg] was not set. " \
+              "All packages will be installed without gpg signature checks. " \
               "This is a security hazard.")
             "--no-gpg-checks"
           end

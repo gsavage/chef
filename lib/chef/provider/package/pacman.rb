@@ -54,7 +54,7 @@ class Chef
 
           repos = %w{extra core community}
 
-          if ::File.exists?("/etc/pacman.conf")
+          if ::File.exist?("/etc/pacman.conf")
             pacman = ::File.read("/etc/pacman.conf")
             repos = pacman.scan(/\[(.+)\]/).flatten
           end
@@ -64,10 +64,10 @@ class Chef
           status = shell_out_with_timeout("pacman -Sl")
           status.stdout.each_line do |line|
             case line
-              when /^(#{package_repos}) #{Regexp.escape(new_resource.package_name)} (.+)$/
-                # $2 contains a string like "4.4.0-1" or "3.10-4 [installed]"
-                # simply split by space and use first token
-                @candidate_version = $2.split(" ").first
+            when /^(#{package_repos}) #{Regexp.escape(new_resource.package_name)} (.+)$/
+              # $2 contains a string like "4.4.0-1" or "3.10-4 [installed]"
+              # simply split by space and use first token
+              @candidate_version = $2.split(" ").first
             end
           end
 

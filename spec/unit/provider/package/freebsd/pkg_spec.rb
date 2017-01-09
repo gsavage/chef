@@ -31,6 +31,8 @@ describe Chef::Provider::Package::Freebsd::Pkg, "load_current_resource" do
     @provider = Chef::Provider::Package::Freebsd::Pkg.new(@new_resource, @run_context)
     @provider.current_resource = @current_resource
     allow(::File).to receive(:exist?).with("/usr/ports/Makefile").and_return(false)
+    allow(::File).to receive(:exist?).with("/usr/ports/www/wordpress").and_return(false)
+    allow(::File).to receive(:exist?).with("www/wordpress").and_return(false)
   end
 
   describe "when determining the current package state" do

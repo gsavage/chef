@@ -28,7 +28,7 @@ describe Chef::Provider::Package::Aix do
     @new_resource.source("/tmp/samba.base")
 
     @provider = Chef::Provider::Package::Aix.new(@new_resource, @run_context)
-    allow(::File).to receive(:exists?).with(@new_resource.source).and_return(true)
+    allow(::File).to receive(:exist?).with(@new_resource.source).and_return(true)
   end
 
   describe "assessing the current package status" do
@@ -57,7 +57,7 @@ describe Chef::Provider::Package::Aix do
 
     it "should raise an exception if a source is supplied but not found" do
       allow(@provider).to receive(:shell_out).and_return(@empty_status)
-      allow(::File).to receive(:exists?).with(@new_resource.source).and_return(false)
+      allow(::File).to receive(:exist?).with(@new_resource.source).and_return(false)
       @provider.load_current_resource
       @provider.define_resource_requirements
       expect { @provider.process_resource_requirements }.to raise_error(Chef::Exceptions::Package)

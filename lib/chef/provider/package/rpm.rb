@@ -52,7 +52,7 @@ class Chef
           current_resource.package_name(new_resource.package_name)
 
           if new_resource.source
-            unless uri_scheme?(new_resource.source) || ::File.exists?(new_resource.source)
+            unless uri_scheme?(new_resource.source) || ::File.exist?(new_resource.source)
               @package_source_exists = false
               return
             end
@@ -87,18 +87,18 @@ class Chef
         end
 
         def install_package(name, version)
-          unless current_resource.version
-            shell_out_with_timeout!( "rpm #{new_resource.options} -i #{new_resource.source}" )
-          else
+          if current_resource.version
             if allow_downgrade
               shell_out_with_timeout!( "rpm #{new_resource.options} -U --oldpackage #{new_resource.source}" )
             else
               shell_out_with_timeout!( "rpm #{new_resource.options} -U #{new_resource.source}" )
             end
+          else
+            shell_out_with_timeout!( "rpm #{new_resource.options} -i #{new_resource.source}" )
           end
         end
 
-        alias_method :upgrade_package, :install_package
+        alias upgrade_package install_package
 
         def remove_package(name, version)
           if version

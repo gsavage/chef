@@ -79,7 +79,7 @@ class Chef
               islocked = true
             end
           end
-          return islocked
+          islocked
         end
 
         def install_package(name, version)
@@ -131,7 +131,7 @@ class Chef
         # interactive prompts. Command is run with default localization rather
         # than forcing locale to "C", so command output may not be stable.
         def run_noninteractive(*args)
-          shell_out_with_timeout!(a_to_s(*args), :env => { "DEBIAN_FRONTEND" => "noninteractive" })
+          shell_out_with_timeout!(a_to_s(*args), env: { "DEBIAN_FRONTEND" => "noninteractive" })
         end
 
         def default_release_options
@@ -166,7 +166,7 @@ class Chef
           if set.size > 1
             raise Chef::Exceptions::Package, "#{new_resource.package_name} is a virtual package provided by multiple packages, you must explicitly select one"
           end
-          return set.to_a.first
+          set.to_a.first
         end
 
         def package_data_for(pkg)
@@ -186,7 +186,7 @@ class Chef
             end
           end
 
-          return {
+          {
             current_version:    current_version,
             candidate_version:  candidate_version,
             virtual:            virtual,

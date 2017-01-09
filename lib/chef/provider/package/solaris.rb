@@ -53,7 +53,7 @@ class Chef
           current_resource.package_name(new_resource.package_name)
 
           if new_resource.source
-            @package_source_found = ::File.exists?(new_resource.source)
+            @package_source_found = ::File.exist?(new_resource.source)
             if @package_source_found
               Chef::Log.debug("#{new_resource} checking pkg status")
               shell_out_with_timeout("pkginfo -l -d #{new_resource.source} #{new_resource.package_name}").stdout.each_line do |line|
@@ -102,25 +102,25 @@ class Chef
         def install_package(name, version)
           Chef::Log.debug("#{new_resource} package install options: #{new_resource.options}")
           if new_resource.options.nil?
-            if ::File.directory?(new_resource.source) # CHEF-4469
-              command = "pkgadd -n -d #{new_resource.source} #{new_resource.package_name}"
-            else
-              command = "pkgadd -n -d #{new_resource.source} all"
-            end
+            command = if ::File.directory?(new_resource.source) # CHEF-4469
+                        "pkgadd -n -d #{new_resource.source} #{new_resource.package_name}"
+                      else
+                        "pkgadd -n -d #{new_resource.source} all"
+                      end
             shell_out_with_timeout!(command)
             Chef::Log.debug("#{new_resource} installed version #{new_resource.version} from: #{new_resource.source}")
           else
-            if ::File.directory?(new_resource.source) # CHEF-4469
-              command = "pkgadd -n#{expand_options(new_resource.options)} -d #{new_resource.source} #{new_resource.package_name}"
-            else
-              command = "pkgadd -n#{expand_options(new_resource.options)} -d #{new_resource.source} all"
-            end
+            command = if ::File.directory?(new_resource.source) # CHEF-4469
+                        "pkgadd -n#{expand_options(new_resource.options)} -d #{new_resource.source} #{new_resource.package_name}"
+                      else
+                        "pkgadd -n#{expand_options(new_resource.options)} -d #{new_resource.source} all"
+                      end
             shell_out_with_timeout!(command)
             Chef::Log.debug("#{new_resource} installed version #{new_resource.version} from: #{new_resource.source}")
           end
         end
 
-        alias_method :upgrade_package, :install_package
+        alias upgrade_package install_package
 
         def remove_package(name, version)
           if new_resource.options.nil?

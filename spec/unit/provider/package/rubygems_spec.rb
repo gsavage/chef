@@ -437,9 +437,9 @@ describe Chef::Provider::Package::Rubygems do
       it "searches for a gem binary when running on Omnibus on Unix" do
         platform_mock :unix do
           allow(ENV).to receive(:[]).with("PATH").and_return("/usr/bin:/usr/sbin:/opt/chef/embedded/bin")
-          allow(File).to receive(:exists?).with("/usr/bin/gem").and_return(false)
-          allow(File).to receive(:exists?).with("/usr/sbin/gem").and_return(true)
-          allow(File).to receive(:exists?).with("/opt/chef/embedded/bin/gem").and_return(true) # should not get here
+          allow(File).to receive(:exist?).with("/usr/bin/gem").and_return(false)
+          allow(File).to receive(:exist?).with("/usr/sbin/gem").and_return(true)
+          allow(File).to receive(:exist?).with("/opt/chef/embedded/bin/gem").and_return(true) # should not get here
           expect(provider.gem_env.gem_binary_location).to eq("/usr/sbin/gem")
         end
       end
@@ -450,11 +450,11 @@ describe Chef::Provider::Package::Rubygems do
         it "searches for a gem binary when running on Omnibus on Windows" do
           platform_mock :windows do
             allow(ENV).to receive(:[]).with("PATH").and_return('C:\windows\system32;C:\windows;C:\Ruby186\bin;d:\opscode\chef\embedded\bin')
-            allow(File).to receive(:exists?).with('C:\\windows\\system32\\gem').and_return(false)
-            allow(File).to receive(:exists?).with('C:\\windows\\gem').and_return(false)
-            allow(File).to receive(:exists?).with('C:\\Ruby186\\bin\\gem').and_return(true)
-            allow(File).to receive(:exists?).with('d:\\opscode\\chef\\bin\\gem').and_return(false) # should not get here
-            allow(File).to receive(:exists?).with('d:\\opscode\\chef\\embedded\\bin\\gem').and_return(false) # should not get here
+            allow(File).to receive(:exist?).with('C:\\windows\\system32\\gem').and_return(false)
+            allow(File).to receive(:exist?).with('C:\\windows\\gem').and_return(false)
+            allow(File).to receive(:exist?).with('C:\\Ruby186\\bin\\gem').and_return(true)
+            allow(File).to receive(:exist?).with('d:\\opscode\\chef\\bin\\gem').and_return(false) # should not get here
+            allow(File).to receive(:exist?).with('d:\\opscode\\chef\\embedded\\bin\\gem').and_return(false) # should not get here
             expect(provider.gem_env.gem_binary_location).to eq('C:\Ruby186\bin\gem')
           end
         end
@@ -615,7 +615,7 @@ describe Chef::Provider::Package::Rubygems do
 
         # this catches 'gem_package "foo"' when "./foo" is a file in the cwd, and instead of installing './foo' it fetches the remote gem
         it "installs the gem via the gems api, when the package has no file separator characters in it, but a matching file exists in cwd" do
-          allow(::File).to receive(:exists?).and_return(true)
+          allow(::File).to receive(:exist?).and_return(true)
           new_resource.package_name("rspec-core")
           expect(provider.gem_env).to receive(:install).with(gem_dep, :sources => nil)
           provider.run_action(:install)

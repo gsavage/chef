@@ -72,7 +72,7 @@ class Chef
             if parts = name.match(/^(.+?)--(.+)/) # use double-dash for stems with flavors, see man page for pkg_add
               name = parts[1]
             end
-            shell_out_with_timeout!("pkg_add -r #{name}#{version_string(version)}", :env => { "PKG_PATH" => pkg_path }).status
+            shell_out_with_timeout!("pkg_add -r #{name}#{version_string(version)}", env: { "PKG_PATH" => pkg_path }).status
             Chef::Log.debug("#{new_resource.package_name} installed")
           end
         end
@@ -81,18 +81,18 @@ class Chef
           if parts = name.match(/^(.+?)--(.+)/)
             name = parts[1]
           end
-          shell_out_with_timeout!("pkg_delete #{name}#{version_string(version)}", :env => nil).status
+          shell_out_with_timeout!("pkg_delete #{name}#{version_string(version)}", env: nil).status
         end
 
         private
 
         def installed_version
-          if parts = new_resource.package_name.match(/^(.+?)--(.+)/)
-            name = parts[1]
-          else
-            name = new_resource.package_name
-          end
-          pkg_info = shell_out_with_timeout!("pkg_info -e \"#{name}->0\"", :env => nil, :returns => [0, 1])
+          name = if parts = new_resource.package_name.match(/^(.+?)--(.+)/)
+                   parts[1]
+                 else
+                   new_resource.package_name
+                 end
+          pkg_info = shell_out_with_timeout!("pkg_info -e \"#{name}->0\"", env: nil, returns: [0, 1])
           result = pkg_info.stdout[/^inst:#{Regexp.escape(name)}-(.+?)\s/, 1]
           Chef::Log.debug("installed_version of '#{new_resource.package_name}' is '#{result}'")
           result
@@ -101,12 +101,12 @@ class Chef
         def candidate_version
           @candidate_version ||= begin
             results = []
-            shell_out_with_timeout!("pkg_info -I \"#{new_resource.package_name}#{version_string(new_resource.version)}\"", :env => nil, :returns => [0, 1]).stdout.each_line do |line|
-              if parts = new_resource.package_name.match(/^(.+?)--(.+)/)
-                results << line[/^#{Regexp.escape(parts[1])}-(.+?)\s/, 1]
-              else
-                results << line[/^#{Regexp.escape(new_resource.package_name)}-(.+?)\s/, 1]
-              end
+            shell_out_with_timeout!("pkg_info -I \"#{new_resource.package_name}#{version_string(new_resource.version)}\"", env: nil, returns: [0, 1]).stdout.each_line do |line|
+              results << if parts = new_resource.package_name.match(/^(.+?)--(.+)/)
+                           line[/^#{Regexp.escape(parts[1])}-(.+?)\s/, 1]
+                         else
+                           line[/^#{Regexp.escape(new_resource.package_name)}-(.+?)\s/, 1]
+                         end
             end
             results = results.reject(&:nil?)
             Chef::Log.debug("Candidate versions of '#{new_resource.package_name}' are '#{results}'")
@@ -127,7 +127,7 @@ class Chef
         end
 
         def pkg_path
-          ENV["PKG_PATH"] || "http://ftp.OpenBSD.org/pub/#{node["kernel"]["name"]}/#{node["kernel"]["release"]}/packages/#{node["kernel"]["machine"]}/"
+          ENV["PKG_PATH"] || "http://ftp.OpenBSD.org/pub/#{node['kernel']['name']}/#{node['kernel']['release']}/packages/#{node['kernel']['machine']}/"
         end
 
       end

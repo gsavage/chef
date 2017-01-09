@@ -121,7 +121,7 @@ class Chef
           end
         end
 
-        alias_method :upgrade_package, :install_package
+        alias upgrade_package install_package
 
         def remove_package(name, version)
           if new_resource.options.nil?
@@ -134,7 +134,7 @@ class Chef
         end
 
         def package_source_found?
-          @package_source_found ||= new_resource.source && ::File.exists?(new_resource.source)
+          @package_source_found ||= new_resource.source && ::File.exist?(new_resource.source)
         end
 
       end

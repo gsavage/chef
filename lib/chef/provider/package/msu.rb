@@ -50,10 +50,10 @@ class Chef
           extract_msu_contents(msu_file, @temp_directory)
           @cab_files = read_cab_files_from_xml(@temp_directory)
 
-          unless @cab_files.empty?
-            current_resource.version(get_current_versions)
-          else
+          if @cab_files.empty?
             raise Chef::Exceptions::Package, "Corrupt MSU package: MSU package XML does not contain any cab file"
+          else
+            current_resource.version(get_current_versions)
           end
           current_resource
         end
@@ -105,7 +105,7 @@ class Chef
         end
 
         def install_package(name, version)
-          #use cab_package resource to install the extracted cab packages
+          # use cab_package resource to install the extracted cab packages
           @cab_files.each do |cab_file|
             declare_resource(:cab_package, new_resource.name) do
               source cab_file
@@ -115,7 +115,7 @@ class Chef
         end
 
         def remove_package(name, version)
-          #use cab_package provider to remove the extracted cab packages
+          # use cab_package provider to remove the extracted cab packages
           @cab_files.each do |cab_file|
             declare_resource(:cab_package, new_resource.name) do
               source cab_file
@@ -141,7 +141,7 @@ class Chef
             raise Chef::Exceptions::Package, "Corrupt MSU package: MSU package doesn't contain any xml file"
           else
             # msu package contains only single xml file. So using xml_files.first is sufficient
-            doc = ::File.open("#{xml_files.first}") { |f| REXML::Document.new f }
+            doc = ::File.open(xml_files.first.to_s) { |f| REXML::Document.new f }
             locations = doc.elements.each("unattend/servicing/package/source") { |element| puts element.attributes["location"] }
             locations.each do |loc|
               cab_files << msu_dir + "/" + loc.attribute("location").value.split("\\")[1]
@@ -154,7 +154,7 @@ class Chef
 
         def cleanup_after_converge
           # delete the temp directory where the contents of msu file are extracted
-          FileUtils.rm_rf(@temp_directory) if Dir.exists?(@temp_directory)
+          FileUtils.rm_rf(@temp_directory) if Dir.exist?(@temp_directory)
         end
       end
     end

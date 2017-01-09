@@ -41,7 +41,7 @@ describe Chef::Provider::Package::Rpm do
   let(:rpm_q_status) { instance_double("Mixlib::ShellOut", exitstatus: rpm_q_exitstatus, stdout: rpm_q_stdout) }
 
   before(:each) do
-    allow(::File).to receive(:exists?).with("PLEASE STUB File.exists? EXACTLY").and_return(true)
+    allow(::File).to receive(:exist?).with("PLEASE STUB File.exists? EXACTLY").and_return(true)
 
     # Ensure all shell out usage is stubbed with exact arguments
     allow(provider).to receive(:shell_out!).with("PLEASE STUB YOUR SHELLOUT CALLS").and_return(nil)
@@ -61,7 +61,7 @@ describe Chef::Provider::Package::Rpm do
     context "when the source is a file that doesn't exist" do
 
       it "should raise an exception when attempting any action" do
-        allow(::File).to receive(:exists?).with(package_source).and_return(false)
+        allow(::File).to receive(:exist?).with(package_source).and_return(false)
         expect { provider.run_action(:any) }.to raise_error(Chef::Exceptions::Package)
       end
     end
@@ -71,7 +71,7 @@ describe Chef::Provider::Package::Rpm do
       let(:package_source) { "foobar://example.com/ImageMagick-c++-6.5.4.7-7.el6_5.x86_64.rpm" }
 
       it "should raise an exception if an uri formed source is non-supported scheme" do
-        allow(::File).to receive(:exists?).with(package_source).and_return(false)
+        allow(::File).to receive(:exist?).with(package_source).and_return(false)
 
         # verify let bindings are as we expect
         expect(new_resource.source).to eq("foobar://example.com/ImageMagick-c++-6.5.4.7-7.el6_5.x86_64.rpm")
@@ -97,7 +97,7 @@ describe Chef::Provider::Package::Rpm do
     context "when rpm fails when querying package installed state" do
 
       before do
-        allow(::File).to receive(:exists?).with(package_source).and_return(true)
+        allow(::File).to receive(:exist?).with(package_source).and_return(true)
       end
 
       let(:rpm_qp_stdout) { "ImageMagick-c++ 6.5.4.7-7.el6_5" }
@@ -129,7 +129,7 @@ describe Chef::Provider::Package::Rpm do
       context "when the source is a file system path" do
 
         before do
-          allow(::File).to receive(:exists?).with(package_source).and_return(true)
+          allow(::File).to receive(:exist?).with(package_source).and_return(true)
 
           provider.action = action
 
@@ -276,7 +276,7 @@ describe Chef::Provider::Package::Rpm do
 
       context "when the source is given as an URI" do
         before(:each) do
-          allow(::File).to receive(:exists?).with(package_source).and_return(false)
+          allow(::File).to receive(:exist?).with(package_source).and_return(false)
 
           provider.action = action
 
@@ -322,7 +322,7 @@ describe Chef::Provider::Package::Rpm do
       let(:action) { :install }
 
       before do
-        allow(File).to receive(:exists?).with(package_source).and_return(true)
+        allow(File).to receive(:exist?).with(package_source).and_return(true)
 
         provider.action = action
 
@@ -404,7 +404,7 @@ describe Chef::Provider::Package::Rpm do
       # provider will call File.exists?. Because of the ordering in our
       # let() bindings and such, we have to set the stub here and not in a
       # before block.
-      allow(::File).to receive(:exists?).with(package_source).and_return(true)
+      allow(::File).to receive(:exist?).with(package_source).and_return(true)
       Chef::Resource::Package.new("/tmp/ImageMagick-c++-6.5.4.7-7.el6_5.x86_64.rpm")
     end
 

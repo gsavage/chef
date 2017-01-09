@@ -121,7 +121,7 @@ Include = /etc/pacman.d/mirrorlist
 PACMAN_CONF
 
       status = double(:stdout => "customrepo nano 1.2.3-4", :exitstatus => 0)
-      allow(::File).to receive(:exists?).with("/etc/pacman.conf").and_return(true)
+      allow(::File).to receive(:exist?).with("/etc/pacman.conf").and_return(true)
       allow(::File).to receive(:read).with("/etc/pacman.conf").and_return(@pacman_conf)
       allow(@provider).to receive(:shell_out).and_return(status)
 

@@ -39,6 +39,7 @@ describe Chef::Provider::Package::Yum do
       :disable_extra_repo_control => true
     )
     allow(Chef::Provider::Package::Yum::YumCache).to receive(:instance).and_return(@yum_cache)
+    allow(::File).to receive(:exist?).with("/usr/bin/yum-deprecated").and_return false
     allow(@yum_cache).to receive(:yum_binary=).with("yum")
     @provider = Chef::Provider::Package::Yum.new(@new_resource, @run_context)
     @pid = double("PID")
@@ -80,7 +81,7 @@ describe Chef::Provider::Package::Yum do
         @new_resource = Chef::Resource::YumPackage.new("testing.source")
         @new_resource.source "chef-server-core-12.0.5-1.rpm"
         @provider = Chef::Provider::Package::Yum.new(@new_resource, @run_context)
-        allow(File).to receive(:exists?).with(@new_resource.source).and_return(true)
+        allow(File).to receive(:exist?).with(@new_resource.source).and_return(true)
         allow(@yum_cache).to receive(:installed_version).and_return(nil)
         shellout_double = double(:stdout => "chef-server-core 12.0.5-1")
         allow(@provider).to receive(:shell_out!).and_return(shellout_double)
@@ -174,7 +175,6 @@ describe Chef::Provider::Package::Yum do
             [Chef::Provider::Package::Yum::RPMDbPackage.new("cups", "1.2.4-11.18.el5_2.3", "noarch", [], false, true, "base"),
             Chef::Provider::Package::Yum::RPMDbPackage.new("cups", "1.2.4-11.18.el5_2.2", "noarch", [], false, true, "base")]
           end
-          expect(Chef::Log).to receive(:debug).exactly(1).times.with(%r{checking yum info})
           expect(Chef::Log).to receive(:debug).exactly(1).times.with(%r{installed version})
           expect(Chef::Log).to receive(:debug).exactly(1).times.with(%r{matched 2 packages,})
           @provider.load_current_resource
@@ -540,7 +540,7 @@ describe Chef::Provider::Package::Yum do
 
     it "should run yum localinstall if given a path to an rpm as the package" do
       @new_resource = Chef::Resource::Package.new("/tmp/emacs-21.4-20.el5.i386.rpm")
-      allow(::File).to receive(:exists?).and_return(true)
+      allow(::File).to receive(:exist?).with("/tmp/emacs-21.4-20.el5.i386.rpm").and_return(true)
       @provider = Chef::Provider::Package::Yum.new(@new_resource, @run_context)
       expect(@new_resource.source).to eq("/tmp/emacs-21.4-20.el5.i386.rpm")
       expect(@provider).to receive(:yum_command).with(
@@ -2213,7 +2213,6 @@ describe "Chef::Provider::Package::Yum - Multi" do
         end
         expect(Chef::Log).to receive(:debug).exactly(2).times.with(%r{matched 1 package,})
         expect(Chef::Log).to receive(:debug).exactly(1).times.with(%r{candidate version: \["1.2.4-11.18.el5_2.3", "24.4"\]})
-        expect(Chef::Log).to receive(:debug).at_least(2).times.with(%r{checking yum info})
         @provider.load_current_resource
         expect(@provider.new_resource.package_name).to eq(%w{cups emacs})
         expect(@provider.new_resource.version).to eq(["1.2.4-11.18.el5_2.3", "24.4"])

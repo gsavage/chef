@@ -102,8 +102,7 @@ class Chef
         end
 
         # Override the superclass check.  Multiple sources are required here.
-        def check_resource_semantics!
-        end
+        def check_resource_semantics!; end
 
         private
 
@@ -125,7 +124,7 @@ class Chef
               end
             end
           end
-          return nil
+          nil
         end
 
         def get_current_version_from(array)
@@ -137,7 +136,7 @@ class Chef
         # Runs command via shell_out_with_timeout with magic environment to disable
         # interactive prompts.
         def run_noninteractive(*command)
-          shell_out_with_timeout!(a_to_s(*command), :env => { "DEBIAN_FRONTEND" => "noninteractive" })
+          shell_out_with_timeout!(a_to_s(*command), env: { "DEBIAN_FRONTEND" => "noninteractive" })
         end
 
         # Returns true if all sources exist.  Returns false if any do not, or if no

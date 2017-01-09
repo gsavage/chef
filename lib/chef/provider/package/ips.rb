@@ -36,7 +36,7 @@ class Chef
           super
 
           requirements.assert(:all_actions) do |a|
-            a.assertion { ! @candidate_version.nil? }
+            a.assertion { !@candidate_version.nil? }
             a.failure_message Chef::Exceptions::Package, "Package #{new_resource.package_name} not found"
             a.whyrun "Assuming package #{new_resource.package_name} would have been made available."
           end
@@ -46,14 +46,14 @@ class Chef
           shell_out_with_timeout("pkg info #{new_resource.package_name}").stdout.each_line do |line|
             return $1.split[0] if line =~ /^\s+Version: (.*)/
           end
-          return nil
+          nil
         end
 
         def get_candidate_version
           shell_out_with_timeout!("pkg info -r #{new_resource.package_name}").stdout.each_line do |line|
             return $1.split[0] if line =~ /Version: (.*)/
           end
-          return nil
+          nil
         end
 
         def load_current_resource

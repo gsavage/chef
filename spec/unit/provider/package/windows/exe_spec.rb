@@ -1,4 +1,4 @@
-#
+ #
 # Author:: Matt Wrock <matt@mattwrock.com>
 # Copyright:: Copyright 2015-2016, Chef Software, Inc.
 # License:: Apache License, Version 2.0

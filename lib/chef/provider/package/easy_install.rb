@@ -32,11 +32,11 @@ class Chef
 
           begin
             # first check to see if we can import it
-            output = shell_out_with_timeout!("#{python_binary_path} -c \"import #{name}\"", :returns => [0, 1]).stderr
+            output = shell_out_with_timeout!("#{python_binary_path} -c \"import #{name}\"", returns: [0, 1]).stderr
             if output.include? "ImportError"
               # then check to see if its on the path
-              output = shell_out_with_timeout!("#{python_binary_path} -c \"import sys; print sys.path\"", :returns => [0, 1]).stdout
-              if output.downcase.include? "#{name.downcase}"
+              output = shell_out_with_timeout!("#{python_binary_path} -c \"import sys; print sys.path\"", returns: [0, 1]).stdout
+              if output.downcase.include? name.downcase.to_s
                 check = true
               end
             else
@@ -75,7 +75,7 @@ class Chef
               output = shell_out_with_timeout!("#{python_binary_path} -c \"import #{module_name}; print #{module_name}.__version__\"").stdout
               package_version = output.strip
             rescue
-              output = shell_out_with_timeout!("#{python_binary_path} -c \"import sys; print sys.path\"", :returns => [0, 1]).stdout
+              output = shell_out_with_timeout!("#{python_binary_path} -c \"import sys; print sys.path\"", returns: [0, 1]).stdout
 
               output_array = output.gsub(/[\[\]]/, "").split(/\s*,\s*/)
               package_path = ""
@@ -105,15 +105,15 @@ class Chef
         def candidate_version
           return @candidate_version if @candidate_version
 
-           # do a dry run to get the latest version
-          result = shell_out_with_timeout!("#{easy_install_binary_path} -n #{new_resource.package_name}", :returns => [0, 1])
+          # do a dry run to get the latest version
+          result = shell_out_with_timeout!("#{easy_install_binary_path} -n #{new_resource.package_name}", returns: [0, 1])
           @candidate_version = result.stdout[/(.*)Best match: (.*) (.*)$/, 3]
           @candidate_version
         end
 
         def install_package(name, version)
           Chef.deprecated(:easy_install, "The easy_install package provider is deprecated and will be removed in Chef 13.")
-          run_command(:command => "#{easy_install_binary_path}#{expand_options(new_resource.options)} \"#{name}==#{version}\"")
+          run_command(command: "#{easy_install_binary_path}#{expand_options(new_resource.options)} \"#{name}==#{version}\"")
         end
 
         def upgrade_package(name, version)
@@ -122,7 +122,7 @@ class Chef
 
         def remove_package(name, version)
           Chef.deprecated(:easy_install, "The easy_install package provider is deprecated and will be removed in Chef 13.")
-          run_command(:command => "#{easy_install_binary_path}#{expand_options(new_resource.options)} -m #{name}")
+          run_command(command: "#{easy_install_binary_path}#{expand_options(new_resource.options)} -m #{name}")
         end
 
         def purge_package(name, version)
