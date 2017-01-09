@@ -43,7 +43,7 @@ class Chef
           @current_resource = Chef::Resource::MsuPackage.new(new_resource.name)
 
           # download file if source is a url
-          msu_file = uri_scheme?(new_resource.source) ? download_source_file : @new_resource.source
+          msu_file = uri_scheme?(new_resource.source) ? download_source_file : new_resource.source
 
           # temp directory where the contents of msu file get extracted
           @temp_directory = Dir.mktmpdir("chef")
@@ -77,7 +77,7 @@ class Chef
         end
 
         def get_cab_package(cab_file)
-          cab_resource = @new_resource
+          cab_resource = new_resource
           cab_resource.source = cab_file
           cab_pkg = Chef::Provider::Package::Cab.new(cab_resource, nil)
         end
@@ -107,7 +107,7 @@ class Chef
         def install_package(name, version)
           #use cab_package resource to install the extracted cab packages
           @cab_files.each do |cab_file|
-            declare_resource(:cab_package, @new_resource.name) do
+            declare_resource(:cab_package, new_resource.name) do
               source cab_file
               action :install
             end
@@ -117,7 +117,7 @@ class Chef
         def remove_package(name, version)
           #use cab_package provider to remove the extracted cab packages
           @cab_files.each do |cab_file|
-            declare_resource(:cab_package, @new_resource.name) do
+            declare_resource(:cab_package, new_resource.name) do
               source cab_file
               action :remove
             end

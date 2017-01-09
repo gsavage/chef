@@ -32,10 +32,10 @@ class Chef
         PACKAGE_NAME_PATTERN = %r{(?:([^/]+)/)?([^/]+)}
 
         def load_current_resource
-          @current_resource = Chef::Resource::Package.new(@new_resource.name)
-          @current_resource.package_name(@new_resource.package_name)
+          @current_resource = Chef::Resource::Package.new(new_resource.name)
+          @current_resource.package_name(new_resource.package_name)
 
-          category, pkg = %r{^#{PACKAGE_NAME_PATTERN}$}.match(@new_resource.package_name)[1, 2]
+          category, pkg = %r{^#{PACKAGE_NAME_PATTERN}$}.match(new_resource.package_name)[1, 2]
 
           globsafe_category = category ? Chef::Util::PathHelper.escape_glob_dir(category) : nil
           globsafe_pkg = Chef::Util::PathHelper.escape_glob_dir(pkg)
@@ -50,11 +50,11 @@ class Chef
             atoms = versions.map { |v| v.first }.sort
             categories = atoms.map { |v| v.split("/")[0] }.uniq
             if !category && categories.size > 1
-              raise Chef::Exceptions::Package, "Multiple packages found for #{@new_resource.package_name}: #{atoms.join(" ")}. Specify a category."
+              raise Chef::Exceptions::Package, "Multiple packages found for #{new_resource.package_name}: #{atoms.join(" ")}. Specify a category."
             end
           elsif versions.size == 1
             @current_resource.version(versions.first.last)
-            Chef::Log.debug("#{@new_resource} current version #{$1}")
+            Chef::Log.debug("#{new_resource} current version #{$1}")
           end
 
           @current_resource
@@ -94,8 +94,8 @@ class Chef
         def candidate_version
           return @candidate_version if @candidate_version
 
-          status = shell_out("emerge --color n --nospinner --search #{@new_resource.package_name.split('/').last}")
-          available, installed = parse_emerge(@new_resource.package_name, status.stdout)
+          status = shell_out("emerge --color n --nospinner --search #{new_resource.package_name.split('/').last}")
+          available, installed = parse_emerge(new_resource.package_name, status.stdout)
           @candidate_version = available
 
           unless status.exitstatus == 0
@@ -113,7 +113,7 @@ class Chef
             pkg = "~#{name}-#{$1}"
           end
 
-          shell_out!( "emerge -g --color n --nospinner --quiet#{expand_options(@new_resource.options)} #{pkg}" )
+          shell_out!( "emerge -g --color n --nospinner --quiet#{expand_options(new_resource.options)} #{pkg}" )
         end
 
         def upgrade_package(name, version)
@@ -122,12 +122,12 @@ class Chef
 
         def remove_package(name, version)
           if version
-            pkg = "=#{@new_resource.package_name}-#{version}"
+            pkg = "=#{new_resource.package_name}-#{version}"
           else
-            pkg = "#{@new_resource.package_name}"
+            pkg = "#{new_resource.package_name}"
           end
 
-          shell_out!( "emerge --unmerge --color n --nospinner --quiet#{expand_options(@new_resource.options)} #{pkg}" )
+          shell_out!( "emerge --unmerge --color n --nospinner --quiet#{expand_options(new_resource.options)} #{pkg}" )
         end
 
         def purge_package(name, version)

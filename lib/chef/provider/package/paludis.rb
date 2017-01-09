@@ -28,14 +28,14 @@ class Chef
         provides :paludis_package, os: "linux"
 
         def load_current_resource
-          @current_resource = Chef::Resource::Package.new(@new_resource.package_name)
-          @current_resource.package_name(@new_resource.package_name)
+          @current_resource = Chef::Resource::Package.new(new_resource.package_name)
+          @current_resource.package_name(new_resource.package_name)
 
-          Chef::Log.debug("Checking package status for #{@new_resource.package_name}")
+          Chef::Log.debug("Checking package status for #{new_resource.package_name}")
           installed = false
           re = Regexp.new("(.*)[[:blank:]](.*)[[:blank:]](.*)$")
 
-          shell_out!("cave -L warning print-ids -M none -m \"#{@new_resource.package_name}\" -f \"%c/%p %v %r\n\"").stdout.each_line do |line|
+          shell_out!("cave -L warning print-ids -M none -m \"#{new_resource.package_name}\" -f \"%c/%p %v %r\n\"").stdout.each_line do |line|
             res = re.match(line)
             unless res.nil?
               case res[3]
@@ -57,9 +57,9 @@ class Chef
           if version
             pkg = "=#{name}-#{version}"
           else
-            pkg = "#{@new_resource.package_name}"
+            pkg = "#{new_resource.package_name}"
           end
-          shell_out!("cave -L warning resolve -x#{expand_options(@new_resource.options)} \"#{pkg}\"", :timeout => @new_resource.timeout)
+          shell_out!("cave -L warning resolve -x#{expand_options(new_resource.options)} \"#{pkg}\"", :timeout => new_resource.timeout)
         end
 
         def upgrade_package(name, version)
@@ -68,12 +68,12 @@ class Chef
 
         def remove_package(name, version)
           if version
-            pkg = "=#{@new_resource.package_name}-#{version}"
+            pkg = "=#{new_resource.package_name}-#{version}"
           else
-            pkg = "#{@new_resource.package_name}"
+            pkg = "#{new_resource.package_name}"
           end
 
-          shell_out!("cave -L warning uninstall -x#{expand_options(@new_resource.options)} \"#{pkg}\"")
+          shell_out!("cave -L warning uninstall -x#{expand_options(new_resource.options)} \"#{pkg}\"")
         end
 
         def purge_package(name, version)

@@ -52,8 +52,8 @@ class Chef
         #
 
         def arch_for_name(n)
-          if @new_resource.respond_to?("arch")
-            @new_resource.arch
+          if new_resource.respond_to?("arch")
+            new_resource.arch
           elsif @arch
             idx = package_name_array.index(n)
             as_array(@arch)[idx]
@@ -63,22 +63,22 @@ class Chef
         end
 
         def arch
-          if @new_resource.respond_to?("arch")
-            @new_resource.arch
+          if new_resource.respond_to?("arch")
+            new_resource.arch
           else
             nil
           end
         end
 
         def set_arch(arch)
-          if @new_resource.respond_to?("arch")
-            @new_resource.arch(arch)
+          if new_resource.respond_to?("arch")
+            new_resource.arch(arch)
           end
         end
 
         def flush_cache
-          if @new_resource.respond_to?("flush_cache")
-            @new_resource.flush_cache
+          if new_resource.respond_to?("flush_cache")
+            new_resource.flush_cache
           else
             { :before => false, :after => false }
           end
@@ -93,7 +93,7 @@ class Chef
 
         def yum_command(command)
           command = "#{yum_binary} #{command}"
-          Chef::Log.debug("#{@new_resource}: yum command: \"#{command}\"")
+          Chef::Log.debug("#{new_resource}: yum command: \"#{command}\"")
           status = shell_out_with_timeout(command, { :timeout => Chef::Config[:yum_timeout] })
 
           # This is fun: rpm can encounter errors in the %post/%postun scripts which aren't
@@ -109,7 +109,7 @@ class Chef
             status.stdout.each_line do |l|
               # rpm-4.4.2.3 lib/psm.c line 2182
               if l =~ %r{^error: %(post|postun)\(.*\) scriptlet failed, exit status \d+$}
-                Chef::Log.warn("#{@new_resource} caught non-fatal scriptlet issue: \"#{l}\". Can't trust yum exit status " +
+                Chef::Log.warn("#{new_resource} caught non-fatal scriptlet issue: \"#{l}\". Can't trust yum exit status " +
                                "so running install again to verify.")
                 status = shell_out_with_timeout(command, { :timeout => Chef::Config[:yum_timeout] })
                 break
@@ -143,9 +143,9 @@ class Chef
             @yum.reload
           end
 
-          if @new_resource.options
+          if new_resource.options
             repo_control = []
-            @new_resource.options.split.each do |opt|
+            new_resource.options.split.each do |opt|
               if opt =~ %r{--(enable|disable)repo=.+}
                 repo_control << opt
               end
@@ -172,37 +172,37 @@ class Chef
               # If they aren't in the installed packages they could be a dependency
               dep = parse_dependency(n, new_version_array[index])
               if dep
-                if @new_resource.package_name.is_a?(Array)
-                  @new_resource.package_name(package_name_array - [n] + [dep.first])
-                  @new_resource.version(new_version_array - [new_version_array[index]] + [dep.last]) if dep.last
+                if new_resource.package_name.is_a?(Array)
+                  new_resource.package_name(package_name_array - [n] + [dep.first])
+                  new_resource.version(new_version_array - [new_version_array[index]] + [dep.last]) if dep.last
                 else
-                  @new_resource.package_name(dep.first)
-                  @new_resource.version(dep.last) if dep.last
+                  new_resource.package_name(dep.first)
+                  new_resource.version(dep.last) if dep.last
                 end
               end
             end
           end
 
-          @current_resource = Chef::Resource::YumPackage.new(@new_resource.name)
-          @current_resource.package_name(@new_resource.package_name)
+          @current_resource = Chef::Resource::YumPackage.new(new_resource.name)
+          @current_resource.package_name(new_resource.package_name)
 
           installed_version = []
           @candidate_version = []
           @arch = []
-          if @new_resource.source
-            unless ::File.exists?(@new_resource.source)
-              raise Chef::Exceptions::Package, "Package #{@new_resource.name} not found: #{@new_resource.source}"
+          if new_resource.source
+            unless ::File.exists?(new_resource.source)
+              raise Chef::Exceptions::Package, "Package #{new_resource.name} not found: #{new_resource.source}"
             end
 
-            Chef::Log.debug("#{@new_resource} checking rpm status")
-            shell_out_with_timeout!("rpm -qp --queryformat '%{NAME} %{VERSION}-%{RELEASE}\n' #{@new_resource.source}", :timeout => Chef::Config[:yum_timeout]).stdout.each_line do |line|
+            Chef::Log.debug("#{new_resource} checking rpm status")
+            shell_out_with_timeout!("rpm -qp --queryformat '%{NAME} %{VERSION}-%{RELEASE}\n' #{new_resource.source}", :timeout => Chef::Config[:yum_timeout]).stdout.each_line do |line|
               case line
               when /^(\S+)\s(\S+)$/
                 @current_resource.package_name($1)
-                @new_resource.version($2)
+                new_resource.version($2)
               end
             end
-            @candidate_version << @new_resource.version
+            @candidate_version << new_resource.version
             installed_version << @yum.installed_version(@current_resource.package_name, arch)
           else
 
@@ -215,23 +215,23 @@ class Chef
                 # if we parsed an arch from the name, update the name
                 # to be just the package name.
                 if parch
-                  if @new_resource.package_name.is_a?(Array)
-                    @new_resource.package_name[idx] = name
+                  if new_resource.package_name.is_a?(Array)
+                    new_resource.package_name[idx] = name
                   else
-                    @new_resource.package_name(name)
+                    new_resource.package_name(name)
                     # only set the arch if it's a single package
                     set_arch(parch)
                   end
                 end
               end
 
-              if @new_resource.version
+              if new_resource.version
                 new_resource =
-                  "#{@new_resource.package_name}-#{@new_resource.version}#{yum_arch(parch)}"
+                  "#{new_resource.package_name}-#{new_resource.version}#{yum_arch(parch)}"
               else
-                new_resource = "#{@new_resource.package_name}#{yum_arch(parch)}"
+                new_resource = "#{new_resource.package_name}#{yum_arch(parch)}"
               end
-              Chef::Log.debug("#{@new_resource} checking yum info for #{new_resource}")
+              Chef::Log.debug("#{new_resource} checking yum info for #{new_resource}")
               installed_version << @yum.installed_version(name, parch)
               @candidate_version << @yum.candidate_version(name, parch)
               @arch << parch
@@ -246,7 +246,7 @@ class Chef
             @current_resource.version(installed_version)
           end
 
-          Chef::Log.debug("#{@new_resource} installed version: #{installed_version || "(none)"} candidate version: " +
+          Chef::Log.debug("#{new_resource} installed version: #{installed_version || "(none)"} candidate version: " +
                           "#{@candidate_version || "(none)"}")
 
           @current_resource
@@ -310,8 +310,8 @@ class Chef
               end
             end
             pkg_string = pkg_string_bits.join(" ")
-            Chef::Log.info("#{@new_resource} #{log_method} #{repos.join(' ')}")
-            yum_command("-d0 -e0 -y#{expand_options(@new_resource.options)} #{method} #{pkg_string}")
+            Chef::Log.info("#{new_resource} #{log_method} #{repos.join(' ')}")
+            yum_command("-d0 -e0 -y#{expand_options(new_resource.options)} #{method} #{pkg_string}")
           else
             raise Chef::Exceptions::Package, "Version #{version} of #{name} not found. Did you specify both version " +
               "and release? (version-release, e.g. 1.84-10.fc6)"
@@ -319,8 +319,8 @@ class Chef
         end
 
         def install_package(name, version)
-          if @new_resource.source
-            yum_command("-d0 -e0 -y#{expand_options(@new_resource.options)} localinstall #{@new_resource.source}")
+          if new_resource.source
+            yum_command("-d0 -e0 -y#{expand_options(new_resource.options)} localinstall #{new_resource.source}")
           else
             install_remote_package(name, version)
           end
@@ -348,7 +348,7 @@ class Chef
                 end
             super
           else
-            Chef::Log.debug("#{@new_resource} is at the latest version - nothing to do")
+            Chef::Log.debug("#{new_resource} is at the latest version - nothing to do")
           end
         end
 
@@ -368,7 +368,7 @@ class Chef
               "#{n}#{yum_arch(a)}"
             end.join(" ")
           end
-          yum_command("-d0 -e0 -y#{expand_options(@new_resource.options)} remove #{remove_str}")
+          yum_command("-d0 -e0 -y#{expand_options(new_resource.options)} remove #{remove_str}")
 
           if flush_cache[:after]
             @yum.reload
@@ -382,11 +382,11 @@ class Chef
         end
 
         def lock_package(name, version)
-          yum_command("-d0 -e0 -y#{expand_options(@new_resource.options)} versionlock add #{name}")
+          yum_command("-d0 -e0 -y#{expand_options(new_resource.options)} versionlock add #{name}")
         end
 
         def unlock_package(name, version)
-          yum_command("-d0 -e0 -y#{expand_options(@new_resource.options)} versionlock delete #{name}")
+          yum_command("-d0 -e0 -y#{expand_options(new_resource.options)} versionlock delete #{name}")
         end
 
         private
@@ -427,7 +427,7 @@ class Chef
           # Transform the package_name into a requirement
 
           # If we are passed a version or a version constraint we have to assume it's a requirement first. If it can't be
-          # parsed only yum_require.name will be set and @new_resource.version will be left intact
+          # parsed only yum_require.name will be set and new_resource.version will be left intact
           if version
             require_string = "#{name} #{version}"
           else
@@ -442,9 +442,9 @@ class Chef
 
           if packages.empty?
             # Don't bother if we are just ensuring a package is removed - we don't need Provides data
-            actions = Array(@new_resource.action)
+            actions = Array(new_resource.action)
             unless actions.size == 1 && (actions[0] == :remove || actions[0] == :purge)
-              Chef::Log.debug("#{@new_resource} couldn't match #{@new_resource.package_name} in " +
+              Chef::Log.debug("#{new_resource} couldn't match #{new_resource.package_name} in " +
                             "installed Provides, loading available Provides - this may take a moment")
               @yum.reload_provides
               packages = @yum.packages_from_require(yum_require)
@@ -467,7 +467,7 @@ class Chef
             unique_names.uniq!
 
             if unique_names.size > 1
-              Chef::Log.warn("#{@new_resource} matched multiple Provides for #{@new_resource.package_name} " +
+              Chef::Log.warn("#{new_resource} matched multiple Provides for #{new_resource.package_name} " +
                              "but we can only use the first match: #{new_package_name}. Please use a more " +
                              "specific version.")
             end

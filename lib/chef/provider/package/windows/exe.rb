@@ -27,7 +27,7 @@ class Chef
           include Chef::Mixin::ShellOut
 
           def initialize(resource, installer_type, uninstall_entries)
-            @new_resource = resource
+            new_resource = resource
             @installer_type = installer_type
             @uninstall_entries = uninstall_entries
           end

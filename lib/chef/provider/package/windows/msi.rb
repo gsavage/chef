@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-# TODO: Allow @new_resource.source to be a Product Code as a GUID for uninstall / network install
+# TODO: Allow new_resource.source to be a Product Code as a GUID for uninstall / network install
 
 require "chef/win32/api/installer" if (RUBY_PLATFORM =~ /mswin|mingw32|windows/) && Chef::Platform.supports_msi?
 require "chef/mixin/shell_out"
@@ -30,7 +30,7 @@ class Chef
           include Chef::Mixin::ShellOut
 
           def initialize(resource, uninstall_entries)
-            @new_resource = resource
+            new_resource = resource
             @uninstall_entries = uninstall_entries
           end
 

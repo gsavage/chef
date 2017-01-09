@@ -37,13 +37,13 @@ class Chef
 
           requirements.assert(:all_actions) do |a|
             a.assertion { ! @candidate_version.nil? }
-            a.failure_message Chef::Exceptions::Package, "Package #{@new_resource.package_name} not found"
-            a.whyrun "Assuming package #{@new_resource.package_name} would have been made available."
+            a.failure_message Chef::Exceptions::Package, "Package #{new_resource.package_name} not found"
+            a.whyrun "Assuming package #{new_resource.package_name} would have been made available."
           end
         end
 
         def get_current_version
-          shell_out_with_timeout("pkg info #{@new_resource.package_name}").stdout.each_line do |line|
+          shell_out_with_timeout("pkg info #{new_resource.package_name}").stdout.each_line do |line|
             return $1.split[0] if line =~ /^\s+Version: (.*)/
           end
           return nil
@@ -57,9 +57,9 @@ class Chef
         end
 
         def load_current_resource
-          @current_resource = Chef::Resource::Package.new(@new_resource.name)
-          @current_resource.package_name(@new_resource.package_name)
-          Chef::Log.debug("Checking package status for #{@new_resource.name}")
+          @current_resource = Chef::Resource::Package.new(new_resource.name)
+          @current_resource.package_name(new_resource.package_name)
+          Chef::Log.debug("Checking package status for #{new_resource.name}")
           @current_resource.version(get_current_version)
           @candidate_version = get_candidate_version
           @current_resource
@@ -67,9 +67,9 @@ class Chef
 
         def install_package(name, version)
           package_name = "#{name}@#{version}"
-          normal_command = "pkg#{expand_options(@new_resource.options)} install -q #{package_name}"
+          normal_command = "pkg#{expand_options(new_resource.options)} install -q #{package_name}"
           command =
-            if @new_resource.respond_to?(:accept_license) && @new_resource.accept_license
+            if new_resource.respond_to?(:accept_license) && new_resource.accept_license
               normal_command.gsub("-q", "-q --accept")
             else
               normal_command
@@ -83,7 +83,7 @@ class Chef
 
         def remove_package(name, version)
           package_name = "#{name}@#{version}"
-          shell_out_with_timeout!( "pkg#{expand_options(@new_resource.options)} uninstall -q #{package_name}" )
+          shell_out_with_timeout!( "pkg#{expand_options(new_resource.options)} uninstall -q #{package_name}" )
         end
       end
     end

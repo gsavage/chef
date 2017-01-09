@@ -37,27 +37,27 @@ class Chef
         end
 
         def install_package(name, version)
-          dism_command("/Add-Package /PackagePath:\"#{@new_resource.source}\"")
+          dism_command("/Add-Package /PackagePath:\"#{new_resource.source}\"")
         end
 
         def remove_package(name, version)
-          dism_command("/Remove-Package /PackagePath:\"#{@new_resource.source}\"")
+          dism_command("/Remove-Package /PackagePath:\"#{new_resource.source}\"")
         end
 
         def dism_command(command)
-          shellout = Mixlib::ShellOut.new("dism.exe /Online /English #{command} /NoRestart", { :timeout => @new_resource.timeout })
+          shellout = Mixlib::ShellOut.new("dism.exe /Online /English #{command} /NoRestart", { :timeout => new_resource.timeout })
           with_os_architecture(nil) do
             shellout.run_command
           end
         end
 
         def installed_version
-          stdout = dism_command("/Get-PackageInfo /PackagePath:\"#{@new_resource.source}\"").stdout
+          stdout = dism_command("/Get-PackageInfo /PackagePath:\"#{new_resource.source}\"").stdout
           package_info = parse_dism_get_package_info(stdout)
           # e.g. Package_for_KB2975719~31bf3856ad364e35~amd64~~6.3.1.8
           package = split_package_identity(package_info["package_information"]["package_identity"])
           # Search for just the package name to catch a different version being installed
-          Chef::Log.debug("#{@new_resource} searching for installed package #{package['name']}")
+          Chef::Log.debug("#{new_resource} searching for installed package #{package['name']}")
           found_packages = installed_packages.select { |p| p["package_identity"] =~ /^#{package['name']}~/ }
           if found_packages.length == 0
             nil
@@ -71,8 +71,8 @@ class Chef
         end
 
         def package_version
-          Chef::Log.debug("#{@new_resource} getting product version for package at #{@new_resource.source}")
-          stdout = dism_command("/Get-PackageInfo /PackagePath:\"#{@new_resource.source}\"").stdout
+          Chef::Log.debug("#{new_resource} getting product version for package at #{new_resource.source}")
+          stdout = dism_command("/Get-PackageInfo /PackagePath:\"#{new_resource.source}\"").stdout
           find_version(stdout)
         end
 

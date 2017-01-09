@@ -50,23 +50,23 @@ class Chef
         end
 
         def easy_install_binary_path
-          path = @new_resource.easy_install_binary
+          path = new_resource.easy_install_binary
           path ? path : "easy_install"
         end
 
         def python_binary_path
-          path = @new_resource.python_binary
+          path = new_resource.python_binary
           path ? path : "python"
         end
 
         def module_name
-          m = @new_resource.module_name
-          m ? m : @new_resource.name
+          m = new_resource.module_name
+          m ? m : new_resource.name
         end
 
         def load_current_resource
-          @current_resource = Chef::Resource::Package.new(@new_resource.name)
-          @current_resource.package_name(@new_resource.package_name)
+          @current_resource = Chef::Resource::Package.new(new_resource.name)
+          @current_resource.package_name(new_resource.package_name)
 
           # get the currently installed version if installed
           package_version = nil
@@ -81,7 +81,7 @@ class Chef
               package_path = ""
 
               output_array.each do |entry|
-                if entry.downcase.include?(@new_resource.package_name)
+                if entry.downcase.include?(new_resource.package_name)
                   package_path = entry
                 end
               end
@@ -91,11 +91,11 @@ class Chef
             end
           end
 
-          if package_version == @new_resource.version
-            Chef::Log.debug("#{@new_resource} at version #{@new_resource.version}")
-            @current_resource.version(@new_resource.version)
+          if package_version == new_resource.version
+            Chef::Log.debug("#{new_resource} at version #{new_resource.version}")
+            @current_resource.version(new_resource.version)
           else
-            Chef::Log.debug("#{@new_resource} at version #{package_version}")
+            Chef::Log.debug("#{new_resource} at version #{package_version}")
             @current_resource.version(package_version)
           end
 
@@ -106,14 +106,14 @@ class Chef
           return @candidate_version if @candidate_version
 
            # do a dry run to get the latest version
-          result = shell_out_with_timeout!("#{easy_install_binary_path} -n #{@new_resource.package_name}", :returns => [0, 1])
+          result = shell_out_with_timeout!("#{easy_install_binary_path} -n #{new_resource.package_name}", :returns => [0, 1])
           @candidate_version = result.stdout[/(.*)Best match: (.*) (.*)$/, 3]
           @candidate_version
         end
 
         def install_package(name, version)
           Chef.deprecated(:easy_install, "The easy_install package provider is deprecated and will be removed in Chef 13.")
-          run_command(:command => "#{easy_install_binary_path}#{expand_options(@new_resource.options)} \"#{name}==#{version}\"")
+          run_command(:command => "#{easy_install_binary_path}#{expand_options(new_resource.options)} \"#{name}==#{version}\"")
         end
 
         def upgrade_package(name, version)
@@ -122,7 +122,7 @@ class Chef
 
         def remove_package(name, version)
           Chef.deprecated(:easy_install, "The easy_install package provider is deprecated and will be removed in Chef 13.")
-          run_command(:command => "#{easy_install_binary_path}#{expand_options(@new_resource.options)} -m #{name}")
+          run_command(:command => "#{easy_install_binary_path}#{expand_options(new_resource.options)} -m #{name}")
         end
 
         def purge_package(name, version)
