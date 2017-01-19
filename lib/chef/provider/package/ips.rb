@@ -43,21 +43,21 @@ class Chef
         end
 
         def get_current_version
-          shell_out_with_timeout("pkg info #{new_resource.package_name}").stdout.each_line do |line|
+          shell_out_compact_timeout("pkg", "info", new_resource.package_name).stdout.each_line do |line|
             return $1.split[0] if line =~ /^\s+Version: (.*)/
           end
           nil
         end
 
         def get_candidate_version
-          shell_out_with_timeout!("pkg info -r #{new_resource.package_name}").stdout.each_line do |line|
+          shell_out_compact_timeout!("pkg", "info", "-r", new_resource.package_name).stdout.each_line do |line|
             return $1.split[0] if line =~ /Version: (.*)/
           end
           nil
         end
 
         def load_current_resource
-          @current_resource = Chef::Resource::Package.new(new_resource.name)
+          @current_resource = Chef::Resource::IpsPackage.new(new_resource.name)
           current_resource.package_name(new_resource.package_name)
           Chef::Log.debug("Checking package status for #{new_resource.name}")
           current_resource.version(get_current_version)
@@ -66,15 +66,10 @@ class Chef
         end
 
         def install_package(name, version)
-          package_name = "#{name}@#{version}"
-          normal_command = "pkg#{expand_options(new_resource.options)} install -q #{package_name}"
-          command =
-            if new_resource.respond_to?(:accept_license) && new_resource.accept_license
-              normal_command.gsub("-q", "-q --accept")
-            else
-              normal_command
-            end
-          shell_out_with_timeout(command)
+          command = [ "pkg", new_resource.options, "install", "-q" ]
+          command << "--accept" if new_resource.accept_license
+          command << "#{name}@#{version}"
+          shell_out_compact_timeout(command)
         end
 
         def upgrade_package(name, version)
@@ -83,7 +78,7 @@ class Chef
 
         def remove_package(name, version)
           package_name = "#{name}@#{version}"
-          shell_out_with_timeout!( "pkg#{expand_options(new_resource.options)} uninstall -q #{package_name}" )
+          shell_out_compact_timeout!( "pkg", new_resource.options, "uninstall", "-q", package_name )
         end
       end
     end

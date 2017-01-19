@@ -283,7 +283,7 @@ class Chef
               self.class.gempath_cache[@gem_binary_location]
             else
               # shellout! is a fork/exec which won't work on windows
-              shell_style_paths = shell_out!("#{@gem_binary_location} env gempath").stdout
+              shell_style_paths = shell_out_compact!(@gem_binary_location, "env", "gempath").stdout
               # on windows, the path separator is (usually? always?) semicolon
               paths = shell_style_paths.split(::File::PATH_SEPARATOR).map(&:strip)
               self.class.gempath_cache[@gem_binary_location] = paths
@@ -321,7 +321,7 @@ class Chef
             if self.class.platform_cache.key?(@gem_binary_location)
               self.class.platform_cache[@gem_binary_location]
             else
-              gem_environment = shell_out!("#{@gem_binary_location} env").stdout
+              gem_environment = shell_out!(@gem_binary_location, "env").stdout
               self.class.platform_cache[@gem_binary_location] = if jruby = gem_environment[JRUBY_PLATFORM]
                                                                   ["ruby", Gem::Platform.new(jruby)]
                                                                 else
@@ -534,18 +534,19 @@ class Chef
         end
 
         def install_via_gem_command(name, version)
+          src = nil
           if new_resource.source =~ /\.gem$/i
             name = new_resource.source
           elsif new_resource.clear_sources
-            src = " --clear-sources"
-            src << (new_resource.source && " --source=#{new_resource.source}" || "")
+            src = [ "--clear-sources" ]
+            src << "--source=#{new_resource.source}" if new_resource.source
           else
-            src = new_resource.source && " --source=#{new_resource.source} --source=#{Chef::Config[:rubygems_url]}"
+            src = [ "--source=#{new_resource.source}", "--source=#{Chef::Config[:rubygems_url]}" ] if new_resource.source
           end
           if !version.nil? && !version.empty?
-            shell_out_with_timeout!("#{gem_binary_path} install #{name} -q --no-rdoc --no-ri -v \"#{version}\"#{src}#{opts}", env: nil)
+            shell_out_compact_timeout!(gem_binary_path, "install", name, "-q", "--no-rdoc", "--no-ri", "-v", version, src, new_resource.options, env: nil)
           else
-            shell_out_with_timeout!("#{gem_binary_path} install \"#{name}\" -q --no-rdoc --no-ri #{src}#{opts}", env: nil)
+            shell_out_compact_timeout!(gem_binary_path, "install", name, "-q", "--no-rdoc", "--no-ri", src, new_resource.options, env: nil)
           end
         end
 
@@ -569,20 +570,14 @@ class Chef
 
         def uninstall_via_gem_command(name, version)
           if version
-            shell_out_with_timeout!("#{gem_binary_path} uninstall #{name} -q -x -I -v \"#{version}\"#{opts}", env: nil)
+            shell_out_compact_timeout!(gem_binary_path, "uninstall", name, "-q", "-x", "-I", "-v", version, new_resource.options, env: nil)
           else
-            shell_out_with_timeout!("#{gem_binary_path} uninstall #{name} -q -x -I -a#{opts}", env: nil)
+            shell_out_compact_timeout!(gem_binary_path, "uninstall", name, "-q", "-x", "-I", "-a", new_resource.options, env: nil)
           end
         end
 
         def purge_package(name, version)
           remove_package(name, version)
-        end
-
-        private
-
-        def opts
-          expand_options(new_resource.options)
         end
 
       end

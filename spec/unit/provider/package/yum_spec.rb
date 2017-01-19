@@ -294,13 +294,13 @@ describe Chef::Provider::Package::Yum do
     end
 
     it "should detect --enablerepo or --disablerepo when passed among options, collect them preserving order and notify the yum cache" do
-      allow(@new_resource).to receive(:options).and_return("--stuff --enablerepo=foo --otherthings --disablerepo=a,b,c  --enablerepo=bar")
+      @new_resource.options "--stuff --enablerepo=foo --otherthings --disablerepo=a,b,c  --enablerepo=bar"
       expect(@yum_cache).to receive(:enable_extra_repo_control).with("--enablerepo=foo --disablerepo=a,b,c --enablerepo=bar")
       @provider.load_current_resource
     end
 
     it "should let the yum cache know extra repos are disabled if --enablerepo or --disablerepo aren't among options" do
-      allow(@new_resource).to receive(:options).and_return("--stuff --otherthings")
+      @new_resource.options "--stuff --otherthings"
       expect(@yum_cache).to receive(:disable_extra_repo_control)
       @provider.load_current_resource
     end
@@ -525,7 +525,7 @@ describe Chef::Provider::Package::Yum do
       @provider.load_current_resource
       allow(Chef::Provider::Package::Yum::RPMUtils).to receive(:rpmvercmp).and_return(-1)
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y install cups-1.2.4-11.19.el5"
+        "-d0", "-e0", "-y", nil, "install", "cups-1.2.4-11.19.el5"
       )
       @provider.install_package("cups", "1.2.4-11.19.el5")
     end
@@ -533,7 +533,7 @@ describe Chef::Provider::Package::Yum do
     it "should run yum localinstall if given a path to an rpm" do
       allow(@new_resource).to receive(:source).and_return("/tmp/emacs-21.4-20.el5.i386.rpm")
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y localinstall /tmp/emacs-21.4-20.el5.i386.rpm"
+        "-d0", "-e0", "-y", nil, "localinstall", "/tmp/emacs-21.4-20.el5.i386.rpm"
       )
       @provider.install_package("emacs", "21.4-20.el5")
     end
@@ -544,7 +544,7 @@ describe Chef::Provider::Package::Yum do
       @provider = Chef::Provider::Package::Yum.new(@new_resource, @run_context)
       expect(@new_resource.source).to eq("/tmp/emacs-21.4-20.el5.i386.rpm")
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y localinstall /tmp/emacs-21.4-20.el5.i386.rpm"
+        "-d0", "-e0", "-y", nil, "localinstall", "/tmp/emacs-21.4-20.el5.i386.rpm"
       )
       @provider.install_package("/tmp/emacs-21.4-20.el5.i386.rpm", "21.4-20.el5")
     end
@@ -554,7 +554,7 @@ describe Chef::Provider::Package::Yum do
       allow(@new_resource).to receive(:arch).and_return("i386")
       allow(Chef::Provider::Package::Yum::RPMUtils).to receive(:rpmvercmp).and_return(-1)
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y install cups-1.2.4-11.19.el5.i386"
+        "-d0", "-e0", "-y", nil, "install", "cups-1.2.4-11.19.el5.i386"
       )
       @provider.install_package("cups", "1.2.4-11.19.el5")
     end
@@ -562,10 +562,10 @@ describe Chef::Provider::Package::Yum do
     it "installs the package with the options given in the resource" do
       @provider.load_current_resource
       allow(@provider).to receive(:candidate_version).and_return("11")
-      allow(@new_resource).to receive(:options).and_return("--disablerepo epmd")
+      @new_resource.options "--disablerepo epmd"
       allow(Chef::Provider::Package::Yum::RPMUtils).to receive(:rpmvercmp).and_return(-1)
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y --disablerepo epmd install cups-11"
+        "-d0", "-e0", "-y", [ "--disablerepo", "epmd" ], "install", "cups-11"
       )
       @provider.install_package(@new_resource.name, @provider.candidate_version)
     end
@@ -625,7 +625,7 @@ describe Chef::Provider::Package::Yum do
       @provider = Chef::Provider::Package::Yum.new(@new_resource, @run_context)
       @provider.load_current_resource
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y install cups-1.2.4-11.15.el5"
+        "-d0", "-e0", "-y", nil, "install", "cups-1.2.4-11.15.el5"
       )
       @provider.install_package("cups", "1.2.4-11.15.el5")
     end
@@ -649,7 +649,7 @@ describe Chef::Provider::Package::Yum do
       @provider = Chef::Provider::Package::Yum.new(@new_resource, @run_context)
       @provider.load_current_resource
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y downgrade cups-1.2.4-11.15.el5"
+        "-d0", "-e0", "-y", nil, "downgrade", "cups-1.2.4-11.15.el5"
       )
       @provider.install_package("cups", "1.2.4-11.15.el5")
     end
@@ -659,7 +659,7 @@ describe Chef::Provider::Package::Yum do
       @provider.load_current_resource
       allow(Chef::Provider::Package::Yum::RPMUtils).to receive(:rpmvercmp).and_return(-1)
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y install cups-1.2.4-11.15.el5"
+        "-d0", "-e0", "-y", nil, "install", "cups-1.2.4-11.15.el5"
       )
       expect(@yum_cache).to receive(:reload).once
       @provider.install_package("cups", "1.2.4-11.15.el5")
@@ -670,7 +670,7 @@ describe Chef::Provider::Package::Yum do
       @provider.load_current_resource
       allow(Chef::Provider::Package::Yum::RPMUtils).to receive(:rpmvercmp).and_return(-1)
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y install cups-1.2.4-11.15.el5"
+        "-d0", "-e0", "-y", nil, "install", "cups-1.2.4-11.15.el5"
       )
       expect(@yum_cache).not_to receive(:reload)
       @provider.install_package("cups", "1.2.4-11.15.el5")
@@ -683,7 +683,7 @@ describe Chef::Provider::Package::Yum do
       allow(@provider).to receive(:candidate_version).and_return("11")
       allow(Chef::Provider::Package::Yum::RPMUtils).to receive(:rpmvercmp).and_return(-1)
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y install cups-11"
+        "-d0", "-e0", "-y", nil, "install", "cups-11"
       )
       @provider.upgrade_package(@new_resource.name, @provider.candidate_version)
     end
@@ -694,7 +694,7 @@ describe Chef::Provider::Package::Yum do
       allow(@provider).to receive(:candidate_version).and_return("11")
       allow(Chef::Provider::Package::Yum::RPMUtils).to receive(:rpmvercmp).and_return(-1)
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y install cups-11"
+        "-d0", "-e0", "-y", nil, "install", "cups-11"
       )
       @provider.upgrade_package(@new_resource.name, @provider.candidate_version)
     end
@@ -762,7 +762,7 @@ describe Chef::Provider::Package::Yum do
   describe "when removing a package" do
     it "should run yum remove with the package name" do
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y remove emacs-1.0"
+        "-d0", "-e0", "-y", nil, "remove", "emacs-1.0"
       )
       @provider.remove_package("emacs", "1.0")
     end
@@ -770,7 +770,7 @@ describe Chef::Provider::Package::Yum do
     it "should run yum remove with the package name and arch" do
       allow(@new_resource).to receive(:arch).and_return("x86_64")
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y remove emacs-1.0.x86_64"
+        "-d0", "-e0", "-y", nil, "remove", "emacs-1.0.x86_64"
       )
       @provider.remove_package("emacs", "1.0")
     end
@@ -779,7 +779,7 @@ describe Chef::Provider::Package::Yum do
   describe "when purging a package" do
     it "should run yum remove with the package name" do
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y remove emacs-1.0"
+        "-d0", "-e0", "-y", nil, "remove", "emacs-1.0"
       )
       @provider.purge_package("emacs", "1.0")
     end
@@ -788,7 +788,7 @@ describe Chef::Provider::Package::Yum do
   describe "when locking a package" do
     it "should run yum versionlock add with the package name" do
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y versionlock add emacs"
+        "-d0", "-e0", "-y", nil, "versionlock", "add", "emacs"
       )
       @provider.lock_package("emacs", nil)
     end
@@ -797,7 +797,7 @@ describe Chef::Provider::Package::Yum do
   describe "when unlocking a package" do
     it "should run yum versionlock delete with the package name" do
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y versionlock delete emacs"
+        "-d0", "-e0", "-y", nil, "versionlock", "delete", "emacs"
       )
       @provider.unlock_package("emacs", nil)
     end
@@ -808,20 +808,20 @@ describe Chef::Provider::Package::Yum do
       @status = double("Status", :exitstatus => 0, :stdout => "", :stderr => "")
       allow(@provider).to receive(:shell_out).and_return(@status)
       expect(@provider).to receive(:shell_out).once.with(
-        "yum -d0 -e0 -y install emacs-1.0",
+        "yum", "-d0", "-e0", "-y", "install", "emacs-1.0",
         { :timeout => Chef::Config[:yum_timeout] }
       )
-      @provider.yum_command("-d0 -e0 -y install emacs-1.0")
+      @provider.yum_command("-d0", "-e0", "-y", "install", "emacs-1.0")
     end
 
     it "should run yum once if it exits with a return code > 0 and no scriptlet failures" do
       @status = double("Status", :exitstatus => 2, :stdout => "failure failure", :stderr => "problem problem")
       allow(@provider).to receive(:shell_out).and_return(@status)
       expect(@provider).to receive(:shell_out).once.with(
-        "yum -d0 -e0 -y install emacs-1.0",
+        "yum", "-d0", "-e0", "-y", "install", "emacs-1.0",
         { :timeout => Chef::Config[:yum_timeout] }
       )
-      expect { @provider.yum_command("-d0 -e0 -y install emacs-1.0") }.to raise_error(Chef::Exceptions::Exec)
+      expect { @provider.yum_command("-d0", "-e0", "-y", "install", "emacs-1.0") }.to raise_error(Chef::Exceptions::Exec)
     end
 
     it "should run yum once if it exits with a return code of 1 and %pre scriptlet failures" do
@@ -829,11 +829,11 @@ describe Chef::Provider::Package::Yum do
                                  :stderr => "")
       allow(@provider).to receive(:shell_out).and_return(@status)
       expect(@provider).to receive(:shell_out).once.with(
-        "yum -d0 -e0 -y install emacs-1.0",
+        "yum", "-d0", "-e0", "-y", "install", "emacs-1.0",
         { :timeout => Chef::Config[:yum_timeout] }
       )
       # will still raise an exception, can't stub out the subsequent call
-      expect { @provider.yum_command("-d0 -e0 -y install emacs-1.0") }.to raise_error(Chef::Exceptions::Exec)
+      expect { @provider.yum_command("-d0", "-e0", "-y", "install", "emacs-1.0") }.to raise_error(Chef::Exceptions::Exec)
     end
 
     it "should run yum twice if it exits with a return code of 1 and %post scriptlet failures" do
@@ -841,11 +841,11 @@ describe Chef::Provider::Package::Yum do
                                  :stderr => "")
       allow(@provider).to receive(:shell_out).and_return(@status)
       expect(@provider).to receive(:shell_out).twice.with(
-        "yum -d0 -e0 -y install emacs-1.0",
+        "yum", "-d0", "-e0", "-y", "install", "emacs-1.0",
         { :timeout => Chef::Config[:yum_timeout] }
       )
       # will still raise an exception, can't stub out the subsequent call
-      expect { @provider.yum_command("-d0 -e0 -y install emacs-1.0") }.to raise_error(Chef::Exceptions::Exec)
+      expect { @provider.yum_command("-d0", "-e0", "-y", "install", "emacs-1.0") }.to raise_error(Chef::Exceptions::Exec)
     end
 
     it "should pass the yum_binary to the command if its specified" do
@@ -855,10 +855,10 @@ describe Chef::Provider::Package::Yum do
       @status = double("Status", :exitstatus => 0, :stdout => "", :stderr => "")
       allow(@provider).to receive(:shell_out).and_return(@status)
       expect(@provider).to receive(:shell_out).once.with(
-        "yum-deprecated -d0 -e0 -y install emacs-1.0",
+        "yum-deprecated", "-d0", "-e0", "-y", "install", "emacs-1.0",
         { :timeout => Chef::Config[:yum_timeout] }
       )
-      @provider.yum_command("-d0 -e0 -y install emacs-1.0")
+      @provider.yum_command("-d0", "-e0", "-y", "install", "emacs-1.0")
     end
   end
 end
@@ -2229,7 +2229,7 @@ describe "Chef::Provider::Package::Yum - Multi" do
       allow(@yum_cache).to receive(:installed_version).with("cups", nil).and_return("1.2.4-11.18.el5")
       allow(@yum_cache).to receive(:installed_version).with("vim", nil).and_return("0.9")
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y install cups-1.2.4-11.19.el5 vim-1.0"
+        "-d0", "-e0", "-y", nil, "install", "cups-1.2.4-11.19.el5", "vim-1.0"
       )
       @provider.install_package(%w{cups vim}, ["1.2.4-11.19.el5", "1.0"])
     end
@@ -2239,7 +2239,7 @@ describe "Chef::Provider::Package::Yum - Multi" do
       allow(@new_resource).to receive(:arch).and_return("i386")
       allow(Chef::Provider::Package::Yum::RPMUtils).to receive(:rpmvercmp).and_return(-1)
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y install cups-1.2.4-11.19.el5.i386 vim-1.0.i386"
+        "-d0", "-e0", "-y", nil, "install", "cups-1.2.4-11.19.el5.i386", "vim-1.0.i386"
       )
       @provider.install_package(%w{cups vim}, ["1.2.4-11.19.el5", "1.0"])
     end
@@ -2250,9 +2250,9 @@ describe "Chef::Provider::Package::Yum - Multi" do
       allow(@yum_cache).to receive(:installed_version).with("cups", nil).and_return("1.2.4-11.18.el5")
       allow(@yum_cache).to receive(:installed_version).with("vim", nil).and_return("0.9")
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y --disablerepo epmd install cups-1.2.4-11.19.el5 vim-1.0"
+        "-d0", "-e0", "-y", [ "--disablerepo", "epmd" ], "install", "cups-1.2.4-11.19.el5", "vim-1.0"
       )
-      allow(@new_resource).to receive(:options).and_return("--disablerepo epmd")
+      @new_resource.options "--disablerepo epmd"
       @provider.install_package(%w{cups vim}, ["1.2.4-11.19.el5", "1.0"])
     end
 
@@ -2276,7 +2276,7 @@ describe "Chef::Provider::Package::Yum - Multi" do
 
       @provider.load_current_resource
       expect(@provider).to receive(:yum_command).with(
-        "-d0 -e0 -y install cups-1.2.4-11.19.el5.x86_64 vim-1.0"
+        "-d0", "-e0", "-y", nil, "install", "cups-1.2.4-11.19.el5.x86_64", "vim-1.0"
       )
       @provider.install_package(%w{cups vim}, ["1.2.4-11.19.el5", "1.0"])
     end

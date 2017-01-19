@@ -18,13 +18,11 @@
 
 require "chef/provider/package"
 require "chef/resource/cab_package"
-require "chef/mixin/shell_out"
 
 class Chef
   class Provider
     class Package
       class Cab < Chef::Provider::Package
-        include Chef::Mixin::ShellOut
 
         provides :cab_package, os: "windows"
 
@@ -45,9 +43,8 @@ class Chef
         end
 
         def dism_command(command)
-          shellout = Mixlib::ShellOut.new("dism.exe /Online /English #{command} /NoRestart", timeout: new_resource.timeout)
           with_os_architecture(nil) do
-            shellout.run_command
+            shell_out_compact_timeout("dism.exe", "/Online", "/English", command, "/NoRestart")
           end
         end
 

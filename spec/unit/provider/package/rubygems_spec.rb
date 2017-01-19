@@ -185,14 +185,14 @@ describe Chef::Provider::Package::Rubygems::AlternateGemEnvironment do
   it "determines the gem paths from shelling out to gem env" do
     gem_env_output = ["/path/to/gems", "/another/path/to/gems"].join(File::PATH_SEPARATOR)
     shell_out_result = OpenStruct.new(:stdout => gem_env_output)
-    expect(@gem_env).to receive(:shell_out!).with("/usr/weird/bin/gem env gempath").and_return(shell_out_result)
+    expect(@gem_env).to receive(:shell_out!).with("/usr/weird/bin/gem", "env", "gempath").and_return(shell_out_result)
     expect(@gem_env.gem_paths).to eq(["/path/to/gems", "/another/path/to/gems"])
   end
 
   it "caches the gempaths by gem_binary" do
     gem_env_output = ["/path/to/gems", "/another/path/to/gems"].join(File::PATH_SEPARATOR)
     shell_out_result = OpenStruct.new(:stdout => gem_env_output)
-    expect(@gem_env).to receive(:shell_out!).with("/usr/weird/bin/gem env gempath").and_return(shell_out_result)
+    expect(@gem_env).to receive(:shell_out!).with("/usr/weird/bin/gem", "env", "gempath").and_return(shell_out_result)
     expected = ["/path/to/gems", "/another/path/to/gems"]
     expect(@gem_env.gem_paths).to eq(["/path/to/gems", "/another/path/to/gems"])
     expect(Chef::Provider::Package::Rubygems::AlternateGemEnvironment.gempath_cache["/usr/weird/bin/gem"]).to eq(expected)
@@ -271,7 +271,7 @@ RubyGems Environment:
      - https://rubygems.org/
      - http://gems.github.com/
     JRUBY_GEM_ENV
-    expect(@gem_env).to receive(:shell_out!).with("/usr/weird/bin/gem env").and_return(double("jruby_gem_env", :stdout => gem_env_out))
+    expect(@gem_env).to receive(:shell_out!).with("/usr/weird/bin/gem", "env").and_return(double("jruby_gem_env", :stdout => gem_env_out))
     expected = ["ruby", Gem::Platform.new("universal-java-1.6")]
     expect(@gem_env.gem_platforms).to eq(expected)
     # it should also cache the result
@@ -313,7 +313,7 @@ RubyGems Environment:
      - https://rubygems.org/
      - http://gems.github.com/
     RBX_GEM_ENV
-    expect(@gem_env).to receive(:shell_out!).with("/usr/weird/bin/gem env").and_return(double("rbx_gem_env", :stdout => gem_env_out))
+    expect(@gem_env).to receive(:shell_out!).with("/usr/weird/bin/gem", "env").and_return(double("rbx_gem_env", :stdout => gem_env_out))
     expect(@gem_env.gem_platforms).to eq(Gem.platforms)
     expect(Chef::Provider::Package::Rubygems::AlternateGemEnvironment.platform_cache["/usr/weird/bin/gem"]).to eq(Gem.platforms)
   end
@@ -626,8 +626,8 @@ describe Chef::Provider::Package::Rubygems do
           let(:options) { "-i /alt/install/location" }
 
           it "installs the gem by shelling out when options are provided as a String" do
-            expected = "gem install rspec-core -q --no-rdoc --no-ri -v \"#{target_version}\" #{options}"
-            expect(provider).to receive(:shell_out!).with(expected, env: nil, timeout: 900)
+            expected = [ "gem", "install", "rspec-core", "-q", "--no-rdoc", "--no-ri", "-v", target_version, options ]
+            expect(provider).to receive(:shell_out!).with(*expected, env: nil, timeout: 900)
             provider.run_action(:install)
             expect(new_resource).to be_updated_by_last_action
           end
@@ -638,8 +638,8 @@ describe Chef::Provider::Package::Rubygems do
           let(:gem_binary) { "/foo/bar" }
 
           it "installs the gem with rubygems.org as an added source" do
-            expected = "#{gem_binary} install rspec-core -q --no-rdoc --no-ri -v \"#{target_version}\" --source=#{source} --source=https://rubygems.org"
-            expect(provider).to receive(:shell_out!).with(expected, env: nil, timeout: 900)
+            expected = [ gem_binary, "install", "rspec-core", "-q", "--no-rdoc", "--no-ri", "-v", target_version, "--source=#{source}", "--source=https://rubygems.org" ]
+            expect(provider).to receive(:shell_out!).with(*expected, env: nil, timeout: 900)
             provider.run_action(:install)
             expect(new_resource).to be_updated_by_last_action
           end
@@ -651,8 +651,8 @@ describe Chef::Provider::Package::Rubygems do
 
           it "installs the gem" do
             new_resource.clear_sources(true)
-            expected = "#{gem_binary} install rspec-core -q --no-rdoc --no-ri -v \"#{target_version}\" --clear-sources --source=#{source}"
-            expect(provider).to receive(:shell_out!).with(expected, env: nil, timeout: 900)
+            expected = [ gem_binary, "install", "rspec-core", "-q", "--no-rdoc", "--no-ri", "-v", target_version, "--clear-sources", "--source=#{source}" ]
+            expect(provider).to receive(:shell_out!).with(*expected, env: nil, timeout: 900)
             provider.run_action(:install)
             expect(new_resource).to be_updated_by_last_action
           end
@@ -663,8 +663,8 @@ describe Chef::Provider::Package::Rubygems do
           let(:options) { "-i /alt/install/location" }
 
           it "installs the gem by shelling out when options are provided but no version is given" do
-            expected = "gem install rspec-core -q --no-rdoc --no-ri -v \"#{candidate_version}\" #{options}"
-            expect(provider).to receive(:shell_out!).with(expected, env: nil, timeout: 900)
+            expected = [ "gem", "install", "rspec-core", "-q", "--no-rdoc", "--no-ri", "-v", candidate_version, options ]
+            expect(provider).to receive(:shell_out!).with(*expected, env: nil, timeout: 900)
             provider.run_action(:install)
             expect(new_resource).to be_updated_by_last_action
           end
@@ -727,7 +727,7 @@ describe Chef::Provider::Package::Rubygems do
         let(:gem_binary) { "/usr/weird/bin/gem" }
 
         it "installs the gem by shelling out to gem install" do
-          expect(provider).to receive(:shell_out!).with("#{gem_binary} install rspec-core -q --no-rdoc --no-ri -v \"#{target_version}\"", env: nil, timeout: 900)
+          expect(provider).to receive(:shell_out!).with(gem_binary, "install", "rspec-core", "-q", "--no-rdoc", "--no-ri", "-v", target_version, env: nil, timeout: 900)
           provider.run_action(:install)
           expect(new_resource).to be_updated_by_last_action
         end
@@ -737,7 +737,7 @@ describe Chef::Provider::Package::Rubygems do
           let(:target_version) { ">= 0" }
 
           it "installs the gem by shelling out to gem install" do
-            expect(provider).to receive(:shell_out!).with("#{gem_binary} install #{source} -q --no-rdoc --no-ri -v \"#{target_version}\"", env: nil, timeout: 900)
+            expect(provider).to receive(:shell_out!).with(gem_binary, "install", source, "-q", "--no-rdoc", "--no-ri", "-v", target_version, env: nil, timeout: 900)
             provider.run_action(:install)
             expect(new_resource).to be_updated_by_last_action
           end
@@ -749,7 +749,7 @@ describe Chef::Provider::Package::Rubygems do
 
           it "installs the gem from file by shelling out to gem install when the package is a path and the source is nil" do
             expect(new_resource.source).to eq(gem_name)
-            expect(provider).to receive(:shell_out!).with("#{gem_binary} install #{gem_name} -q --no-rdoc --no-ri -v \"#{target_version}\"", env: nil, timeout: 900)
+            expect(provider).to receive(:shell_out!).with(gem_binary, "install", gem_name, "-q", "--no-rdoc", "--no-ri", "-v", target_version, env: nil, timeout: 900)
             provider.run_action(:install)
             expect(new_resource).to be_updated_by_last_action
           end
@@ -796,7 +796,7 @@ describe Chef::Provider::Package::Rubygems do
           let(:options) { "-i /alt/install/location" }
 
           it "uninstalls via the gem command" do
-            expect(provider).to receive(:shell_out!).with("gem uninstall rspec -q -x -I -a #{options}", env: nil, timeout: 900)
+            expect(provider).to receive(:shell_out!).with("gem", "uninstall", "rspec", "-q", "-x", "-I", "-a", options, env: nil, timeout: 900)
             provider.action_remove
           end
         end
@@ -815,7 +815,7 @@ describe Chef::Provider::Package::Rubygems do
         let(:gem_binary) { "/usr/weird/bin/gem" }
 
         it "uninstalls via the gem command" do
-          expect(provider).to receive(:shell_out!).with("#{gem_binary} uninstall rspec -q -x -I -a", env: nil, timeout: 900)
+          expect(provider).to receive(:shell_out!).with(gem_binary, "uninstall", "rspec", "-q", "-x", "-I", "-a", env: nil, timeout: 900)
           provider.action_remove
         end
       end

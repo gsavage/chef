@@ -54,16 +54,6 @@ describe Chef::Provider::Package::Windows::MSI do
     expect(provider).to respond_to(:shell_out!)
   end
 
-  describe "expand_options" do
-    it "returns an empty string if passed no options" do
-      expect(provider.expand_options(nil)).to eql ""
-    end
-
-    it "returns a string with a leading space if passed options" do
-      expect(provider.expand_options("--train nope --town no_way")).to eql(" --train nope --town no_way")
-    end
-  end
-
   describe "installed_version" do
     it "returns the installed version" do
       allow(provider).to receive(:get_product_property).and_return("{23170F69-40C1-2702-0920-000001000000}")
@@ -104,14 +94,14 @@ describe Chef::Provider::Package::Windows::MSI do
 
   describe "install_package" do
     it "calls msiexec /qn /i" do
-      expect(provider).to receive(:shell_out!).with(/msiexec \/qn \/i \"#{Regexp.quote(new_resource.source)}\"/, kind_of(Hash))
+      expect(provider).to receive(:shell_out!).with("msiexec", "/qn", "/i", new_resource.source, kind_of(Hash))
       provider.install_package
     end
   end
 
   describe "remove_package" do
     it "calls msiexec /qn /x" do
-      expect(provider).to receive(:shell_out!).with(/msiexec \/qn \/x \"#{Regexp.quote(new_resource.source)}\"/, kind_of(Hash))
+      expect(provider).to receive(:shell_out!).with("msiexec", "/qn", "/x", new_resource.source, kind_of(Hash))
       provider.remove_package
     end
 
@@ -121,7 +111,7 @@ describe Chef::Provider::Package::Windows::MSI do
       end
 
       it "removes installed package" do
-        expect(provider).to receive(:shell_out!).with(/msiexec \/x {guid} \/q/, kind_of(Hash))
+        expect(provider).to receive(:shell_out!).with("msiexec", "/x", "{guid}", "/q", kind_of(Hash))
         provider.remove_package
       end
 
@@ -140,8 +130,8 @@ describe Chef::Provider::Package::Windows::MSI do
         end
 
         it "removes both installed package" do
-          expect(provider).to receive(:shell_out!).with(/msiexec \/x {guid} \/q/, kind_of(Hash))
-          expect(provider).to receive(:shell_out!).with(/msiexec \/x {guid2} \/q/, kind_of(Hash))
+          expect(provider).to receive(:shell_out!).with("msiexec", "/x", "{guid}", "/q", kind_of(Hash))
+          expect(provider).to receive(:shell_out!).with("msiexec", "/x", "{guid2}", "/q", kind_of(Hash))
           provider.remove_package
         end
       end
@@ -150,7 +140,7 @@ describe Chef::Provider::Package::Windows::MSI do
         before { new_resource.options("/Q") }
 
         it "does not duplicate quiet switch" do
-          expect(provider).to receive(:shell_out!).with(/msiexec \/x {guid} \/Q/, kind_of(Hash))
+          expect(provider).to receive(:shell_out!).with("msiexec", "/x", "{guid}", "/Q", kind_of(Hash))
           provider.remove_package
         end
       end
@@ -159,7 +149,7 @@ describe Chef::Provider::Package::Windows::MSI do
         before { new_resource.options("/qn") }
 
         it "does not duplicate quiet switch" do
-          expect(provider).to receive(:shell_out!).with(/msiexec \/x {guid} \/qn/, kind_of(Hash))
+          expect(provider).to receive(:shell_out!).with("msiexec", "/x", "{guid}", "/qn", kind_of(Hash))
           provider.remove_package
         end
       end

@@ -84,13 +84,13 @@ EOS
 
           # choco does not support installing multiple packages with version pins
           name_has_versions.each do |name, version|
-            choco_command("install -y --version", version, cmd_args, name)
+            choco_command("install", "-y", "--version", version, cmd_args, name)
           end
 
           # but we can do all the ones without version pins at once
           unless name_nil_versions.empty?
             cmd_names = name_nil_versions.keys
-            choco_command("install -y", cmd_args, *cmd_names)
+            choco_command("install", "-y", cmd_args, *cmd_names)
           end
         end
 
@@ -106,13 +106,13 @@ EOS
 
           # choco does not support installing multiple packages with version pins
           name_has_versions.each do |name, version|
-            choco_command("upgrade -y --version", version, cmd_args, name)
+            choco_command("upgrade", "-y", "--version", version, cmd_args, name)
           end
 
           # but we can do all the ones without version pins at once
           unless name_nil_versions.empty?
             cmd_names = name_nil_versions.keys
-            choco_command("upgrade -y", cmd_args, *cmd_names)
+            choco_command("upgrade", "-y", cmd_args, *cmd_names)
           end
         end
 
@@ -121,7 +121,7 @@ EOS
         # @param names [Array<String>] array of package names to install
         # @param versions [Array<String>] array of versions to install
         def remove_package(names, versions)
-          choco_command("uninstall -y", cmd_args(include_source: false), *names)
+          choco_command("uninstall", "-y", cmd_args(include_source: false), *names)
         end
 
         # Support :uninstall as an action in order for users to easily convert
@@ -168,7 +168,7 @@ EOS
         # @param args [String] variable number of string arguments
         # @return [Mixlib::ShellOut] object returned from shell_out!
         def choco_command(*args)
-          shell_out_with_timeout!(args_to_string(choco_exe, *args), returns: new_resource.returns)
+          shell_out_compact_timeout!(choco_exe, *args, returns: new_resource.returns)
         end
 
         # Use the available_packages Hash helper to create an array suitable for
@@ -205,9 +205,9 @@ EOS
         # @param include_source [Boolean] should the source parameter be added
         # @return [String] options from new_resource or empty string
         def cmd_args(include_source: true)
-          cmd_args = [ new_resource.options ]
-          cmd_args.push( "-source #{new_resource.source}" ) if new_resource.source && include_source
-          args_to_string(*cmd_args)
+          cmd_args = new_resource.options || []
+          cmd_args += [ "-source", new_resource.source ] if new_resource.source && include_source
+          cmd_args
         end
 
         # Helper to nicely convert variable string args into a single command line.  It
@@ -228,8 +228,8 @@ EOS
         def available_packages
           @available_packages ||=
             begin
-              cmd = [ "list -r #{package_name_array.join ' '}" ]
-              cmd.push( "-source #{new_resource.source}" ) if new_resource.source
+              cmd = [ "list", "-r" ] + package_name_array
+              cmd += [ "-source", new_resource.source ] if new_resource.source
               raw = parse_list_output(*cmd)
               raw.keys.each_with_object({}) do |name, available|
                 available[name] = desired_name_versions[name] || raw[name]
@@ -243,7 +243,7 @@ EOS
         #
         # @return [Hash] name-to-version mapping of installed packages
         def installed_packages
-          @installed_packages ||= Hash[*parse_list_output("list -l -r").flatten]
+          @installed_packages ||= Hash[*parse_list_output("list", "-l", "-r").flatten]
           @installed_packages
         end
 

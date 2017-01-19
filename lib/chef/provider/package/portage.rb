@@ -94,7 +94,7 @@ class Chef
         def candidate_version
           return @candidate_version if @candidate_version
 
-          status = shell_out("emerge --color n --nospinner --search #{new_resource.package_name.split('/').last}")
+          status = shell_out_compact("emerge", "--color", "n", "--nospinner", "--search", new_resource.package_name.split("/").last)
           available, installed = parse_emerge(new_resource.package_name, status.stdout)
           @candidate_version = available
 
@@ -113,7 +113,7 @@ class Chef
             pkg = "~#{name}-#{$1}"
           end
 
-          shell_out!( "emerge -g --color n --nospinner --quiet#{expand_options(new_resource.options)} #{pkg}" )
+          shell_out_compact!( "emerge", "-g", "--color", "n", "--nospinner", "--quiet", new_resource.options, pkg )
         end
 
         def upgrade_package(name, version)
@@ -127,7 +127,7 @@ class Chef
                   new_resource.package_name.to_s
                 end
 
-          shell_out!( "emerge --unmerge --color n --nospinner --quiet#{expand_options(new_resource.options)} #{pkg}" )
+          shell_out_compact!( "emerge", "--unmerge", "--color", "n", "--nospinner", "--quiet", new_resource.options, pkg )
         end
 
         def purge_package(name, version)

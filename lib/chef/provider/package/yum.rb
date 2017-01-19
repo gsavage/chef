@@ -1,4 +1,4 @@
-
+#
 # Author:: Adam Jacob (<adam@chef.io>)
 # Copyright:: Copyright 2008-2016, Chef Software, Inc.
 # License:: Apache License, Version 2.0
@@ -87,10 +87,10 @@ class Chef
           arch ? ".#{arch}" : nil
         end
 
-        def yum_command(command)
-          command = "#{yum_binary} #{command}"
-          Chef::Log.debug("#{new_resource}: yum command: \"#{command}\"")
-          status = shell_out_with_timeout(command, timeout: Chef::Config[:yum_timeout])
+        def yum_command(*command)
+          cmdarray = [ yum_binary, *command ]
+          Chef::Log.debug("#{new_resource}: yum command: \"#{cmdarray.flatten.join(" ")}\"")
+          status = shell_out_compact_timeout(*cmdarray, timeout: Chef::Config[:yum_timeout])
 
           # This is fun: rpm can encounter errors in the %post/%postun scripts which aren't
           # considered fatal - meaning the rpm is still successfully installed. These issue
@@ -107,20 +107,20 @@ class Chef
               next unless l =~ /^error: %(post|postun)\(.*\) scriptlet failed, exit status \d+$/
               Chef::Log.warn("#{new_resource} caught non-fatal scriptlet issue: \"#{l}\". Can't trust yum exit status " \
                              "so running install again to verify.")
-              status = shell_out_with_timeout(command, timeout: Chef::Config[:yum_timeout])
+              status = shell_out_compact_timeout(*cmdarray, timeout: Chef::Config[:yum_timeout])
               break
             end
           end
 
           if status.exitstatus > 0
             command_output = "STDOUT: #{status.stdout}\nSTDERR: #{status.stderr}"
-            raise Chef::Exceptions::Exec, "#{command} returned #{status.exitstatus}:\n#{command_output}"
+            raise Chef::Exceptions::Exec, "#{cmdarray.flatten.join(" ")} returned #{status.exitstatus}:\n#{command_output}"
           end
         end
 
         def package_locked(name, version)
           islocked = false
-          locked = shell_out_with_timeout!("yum versionlock")
+          locked = shell_out_compact_timeout!("yum", "versionlock")
           locked.stdout.each_line do |line|
             line_package = line.sub(/-[^-]*-[^-]*$/, "").split(":").last.strip
             if line_package == name
@@ -140,7 +140,7 @@ class Chef
 
           if new_resource.options
             repo_control = []
-            new_resource.options.split.each do |opt|
+            new_resource.options.each do |opt|
               if opt =~ /--(enable|disable)repo=.+/
                 repo_control << opt
               end
@@ -188,7 +188,7 @@ class Chef
             end
 
             Chef::Log.debug("#{new_resource} checking rpm status")
-            shell_out_with_timeout!("rpm -qp --queryformat '%{NAME} %{VERSION}-%{RELEASE}\n' #{new_resource.source}", timeout: Chef::Config[:yum_timeout]).stdout.each_line do |line|
+            shell_out_compact_timeout!("rpm", "-qp", "--queryformat", "%{NAME} %{VERSION}-%{RELEASE}\n", new_resource.source, timeout: Chef::Config[:yum_timeout]).stdout.each_line do |line|
               case line
               when /^(\S+)\s(\S+)$/
                 current_resource.package_name($1)
@@ -295,9 +295,8 @@ class Chef
               repos << "#{s} from #{repo} repository"
               pkg_string_bits << s
             end
-            pkg_string = pkg_string_bits.join(" ")
             Chef::Log.info("#{new_resource} #{log_method} #{repos.join(' ')}")
-            yum_command("-d0 -e0 -y#{expand_options(new_resource.options)} #{method} #{pkg_string}")
+            yum_command("-d0", "-e0", "-y", new_resource.options, method, *pkg_string_bits)
           else
             raise Chef::Exceptions::Package, "Version #{version} of #{name} not found. Did you specify both version " \
               "and release? (version-release, e.g. 1.84-10.fc6)"
@@ -306,7 +305,7 @@ class Chef
 
         def install_package(name, version)
           if new_resource.source
-            yum_command("-d0 -e0 -y#{expand_options(new_resource.options)} localinstall #{new_resource.source}")
+            yum_command("-d0", "-e0", "-y", new_resource.options, "localinstall", new_resource.source)
           else
             install_remote_package(name, version)
           end
@@ -354,7 +353,7 @@ class Chef
                            "#{n}#{yum_arch(a)}"
                          end.join(" ")
                        end
-          yum_command("-d0 -e0 -y#{expand_options(new_resource.options)} remove #{remove_str}")
+          yum_command("-d0", "-e0", "-y", new_resource.options, "remove", remove_str)
 
           if flush_cache[:after]
             @yum.reload
@@ -368,11 +367,11 @@ class Chef
         end
 
         def lock_package(name, version)
-          yum_command("-d0 -e0 -y#{expand_options(new_resource.options)} versionlock add #{name}")
+          yum_command("-d0", "-e0", "-y", new_resource.options, "versionlock", "add", name)
         end
 
         def unlock_package(name, version)
-          yum_command("-d0 -e0 -y#{expand_options(new_resource.options)} versionlock delete #{name}")
+          yum_command("-d0", "-e0", "-y", new_resource.options, "versionlock", "delete", name)
         end
 
         private

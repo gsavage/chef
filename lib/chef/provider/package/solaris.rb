@@ -56,7 +56,7 @@ class Chef
             @package_source_found = ::File.exist?(new_resource.source)
             if @package_source_found
               Chef::Log.debug("#{new_resource} checking pkg status")
-              shell_out_with_timeout("pkginfo -l -d #{new_resource.source} #{new_resource.package_name}").stdout.each_line do |line|
+              shell_out_compact_timeout("pkginfo", "-l", "-d", new_resource.source, new_resource.package_name).stdout.each_line do |line|
                 case line
                 when /VERSION:\s+(.+)/
                   new_resource.version($1)
@@ -66,7 +66,7 @@ class Chef
           end
 
           Chef::Log.debug("#{new_resource} checking install state")
-          status = shell_out_with_timeout("pkginfo -l #{current_resource.package_name}")
+          status = shell_out_compact_timeout("pkginfo", "-l", current_resource.package_name)
           status.stdout.each_line do |line|
             case line
             when /VERSION:\s+(.+)/
@@ -84,7 +84,7 @@ class Chef
 
         def candidate_version
           return @candidate_version if @candidate_version
-          status = shell_out_with_timeout("pkginfo -l -d #{new_resource.source} #{new_resource.package_name}")
+          status = shell_out_compact_timeout("pkginfo", "-l", "-d", new_resource.source, new_resource.package_name)
           status.stdout.each_line do |line|
             case line
             when /VERSION:\s+(.+)/
@@ -103,19 +103,19 @@ class Chef
           Chef::Log.debug("#{new_resource} package install options: #{new_resource.options}")
           if new_resource.options.nil?
             command = if ::File.directory?(new_resource.source) # CHEF-4469
-                        "pkgadd -n -d #{new_resource.source} #{new_resource.package_name}"
+                        [ "pkgadd", "-n", "-d", new_resource.source, new_resource.package_name ]
                       else
-                        "pkgadd -n -d #{new_resource.source} all"
+                        [ "pkgadd", "-n", "-d", new_resource.source, "all" ]
                       end
-            shell_out_with_timeout!(command)
+            shell_out_compact_timeout!(command)
             Chef::Log.debug("#{new_resource} installed version #{new_resource.version} from: #{new_resource.source}")
           else
             command = if ::File.directory?(new_resource.source) # CHEF-4469
-                        "pkgadd -n#{expand_options(new_resource.options)} -d #{new_resource.source} #{new_resource.package_name}"
+                        [ "pkgadd", "-n", new_resource.options, "-d", new_resource.source, new_resource.package_name ]
                       else
-                        "pkgadd -n#{expand_options(new_resource.options)} -d #{new_resource.source} all"
+                        [ "pkgadd", "-n", new_resource.options, "-d", new_resource.source, "all" ]
                       end
-            shell_out_with_timeout!(command)
+            shell_out_compact_timeout!(*command)
             Chef::Log.debug("#{new_resource} installed version #{new_resource.version} from: #{new_resource.source}")
           end
         end
@@ -124,10 +124,10 @@ class Chef
 
         def remove_package(name, version)
           if new_resource.options.nil?
-            shell_out_with_timeout!( "pkgrm -n #{name}" )
+            shell_out_compact_timeout!( "pkgrm", "-n", name )
             Chef::Log.debug("#{new_resource} removed version #{new_resource.version}")
           else
-            shell_out_with_timeout!( "pkgrm -n#{expand_options(new_resource.options)} #{name}" )
+            shell_out_compact_timeout!( "pkgrm", "-n", new_resource.options, name )
             Chef::Log.debug("#{new_resource} removed version #{new_resource.version}")
           end
         end
