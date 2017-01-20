@@ -61,7 +61,7 @@ describe Chef::Resource::Package do
 
   it "should accept a string for the options" do
     @resource.options "something"
-    expect(@resource.options).to eql("something")
+    expect(@resource.options).to eql(["something"])
   end
 
   describe "when it has a package_name and version" do
@@ -74,7 +74,7 @@ describe Chef::Resource::Package do
     it "describes its state" do
       state = @resource.state
       expect(state[:version]).to eq("10.9.8")
-      expect(state[:options]).to eq("-al")
+      expect(state[:options]).to eq(["-al"])
     end
 
     it "returns the file path as its identity" do
