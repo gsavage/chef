@@ -25,24 +25,48 @@ class Chef
       end
 
       module ClassMethods
+        def minimum_api_version(version = nil)
+          if version
+            @minimum_api_version = version
+          else
+            @minimum_api_version
+          end
+        end
+      end
+    end
+
+    module VersionedAPIFactory
+
+      def self.included(base)
+        # When this file is mixed in, make sure we also add the class methods
+        base.send :extend, ClassMethods
+      end
+
+      module ClassMethods
         def versioned_interfaces
           @versioned_interfaces ||= []
         end
 
-        def add_api_version(klass)
+        def add_versioned_api_class(klass)
           versioned_interfaces << klass
         end
-      end
 
-      def select_api_version
-        self.class.versioned_interfaces.select do |klass|
-          version = klass.send(:supported_api_version)
-          # min and max versions will be nil if we've not made a request to the server yet,
-          # in which case we'll just start with the highest version and see what happens
-          ServerAPIVersions.instance.min_server_version.nil? || (version >= ServerAPIVersions.instance.min_server_version && version <= ServerAPIVersions.instance.max_server_version)
+        def versioned_api_class
+          versioned_interfaces.select do |klass|
+            version = klass.send(:minimum_api_version)
+            # min and max versions will be nil if we've not made a request to the server yet,
+            # in which case we'll just start with the highest version and see what happens
+            ServerAPIVersions.instance.min_server_version.nil? || (version >= ServerAPIVersions.instance.min_server_version && version <= ServerAPIVersions.instance.max_server_version)
+          end
+            .sort { |a, b| a.send(:minimum_api_version) <=> b.send(:minimum_api_version) }
+            .last
         end
-          .sort { |a, b| a.send(:supported_api_version) <=> b.send(:supported_api_version) }
-          .last
+
+        def new(*args)
+          object = versioned_api_class.allocate
+          object.send(:initialize, *args)
+          object
+        end
       end
     end
   end
