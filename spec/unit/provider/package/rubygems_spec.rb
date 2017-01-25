@@ -626,7 +626,7 @@ describe Chef::Provider::Package::Rubygems do
           let(:options) { "-i /alt/install/location" }
 
           it "installs the gem by shelling out when options are provided as a String" do
-            expected = [ "gem", "install", "rspec-core", "-q", "--no-rdoc", "--no-ri", "-v", target_version, options ]
+            expected = [ "gem", "install", "rspec-core", "-q", "--no-rdoc", "--no-ri", "-v", target_version, *options.split ]
             expect(provider).to receive(:shell_out!).with(*expected, env: nil, timeout: 900)
             provider.run_action(:install)
             expect(new_resource).to be_updated_by_last_action
@@ -663,7 +663,7 @@ describe Chef::Provider::Package::Rubygems do
           let(:options) { "-i /alt/install/location" }
 
           it "installs the gem by shelling out when options are provided but no version is given" do
-            expected = [ "gem", "install", "rspec-core", "-q", "--no-rdoc", "--no-ri", "-v", candidate_version, options ]
+            expected = [ "gem", "install", "rspec-core", "-q", "--no-rdoc", "--no-ri", "-v", candidate_version, *options.split ]
             expect(provider).to receive(:shell_out!).with(*expected, env: nil, timeout: 900)
             provider.run_action(:install)
             expect(new_resource).to be_updated_by_last_action
@@ -793,10 +793,10 @@ describe Chef::Provider::Package::Rubygems do
         end
 
         context "when options are given as a String" do
-          let(:options) { "-i /alt/install/location" }
+          let(:options) { [ "-i", "/alt/install/location" ] }
 
           it "uninstalls via the gem command" do
-            expect(provider).to receive(:shell_out!).with("gem", "uninstall", "rspec", "-q", "-x", "-I", "-a", options, env: nil, timeout: 900)
+            expect(provider).to receive(:shell_out!).with("gem", "uninstall", "rspec", "-q", "-x", "-I", "-a", *options, env: nil, timeout: 900)
             provider.action_remove
           end
         end

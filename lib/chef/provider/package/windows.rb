@@ -205,7 +205,7 @@ class Chef
             r.version(new_resource.version)
             r.timeout(new_resource.timeout)
             r.returns(new_resource.returns)
-            r.options(new_resource.options)
+            r.options(options)
           end
         end
 

@@ -111,12 +111,12 @@ class Chef
         # So far, the code has been tested only with standalone packages.
         #
         def install_package(name, version)
-          Chef::Log.debug("#{new_resource} package install options: #{new_resource.options}")
-          if new_resource.options.nil?
+          Chef::Log.debug("#{new_resource} package install options: #{options}")
+          if options.nil?
             shell_out_compact_timeout!("installp", "-aYF", "-d", new_resource.source, new_resource.package_name)
             Chef::Log.debug("#{new_resource} installed version #{new_resource.version} from: #{new_resource.source}")
           else
-            shell_out_compact_timeout!("installp", "-aYF", new_resource.options, "-d", new_resource.source, new_resource.package_name)
+            shell_out_compact_timeout!("installp", "-aYF", options, "-d", new_resource.source, new_resource.package_name)
             Chef::Log.debug("#{new_resource} installed version #{new_resource.version} from: #{new_resource.source}")
           end
         end
@@ -124,11 +124,11 @@ class Chef
         alias upgrade_package install_package
 
         def remove_package(name, version)
-          if new_resource.options.nil?
+          if options.nil?
             shell_out_compact_timeout!("installp", "-u", name)
             Chef::Log.debug("#{new_resource} removed version #{new_resource.version}")
           else
-            shell_out_compact_timeout!("installp", "-u", new_resource.options, name)
+            shell_out_compact_timeout!("installp", "-u", options, name)
             Chef::Log.debug("#{new_resource} removed version #{new_resource.version}")
           end
         end

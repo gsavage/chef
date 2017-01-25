@@ -37,8 +37,15 @@ class Chef
           attr_reader :uninstall_entries
 
           # From Chef::Provider::Package
-          def expand_options(options)
-            options ? " #{options}" : ""
+          def options
+            if new_resource.options.is_a?(String)
+              # XXX: needs to handle double quotes, single quotes, nested quotes, etc and probably act
+              # more like a space-separated "C"SV file -- although users can fix this just by passing in
+              # a correctly pre-split Array.
+              new_resource.options.split(" ")
+            else
+              new_resource.options
+            end
           end
 
           # Returns a version if the package is installed or nil if it is not.
@@ -60,7 +67,7 @@ class Chef
                 "/wait",
                 "\"#{new_resource.source}\"",
                 unattended_flags,
-                expand_options(new_resource.options),
+                *options,
                 "& exit %%%%ERRORLEVEL%%%%",
               ].join(" "), timeout: new_resource.timeout, returns: new_resource.returns
             )
@@ -69,7 +76,7 @@ class Chef
           def remove_package
             uninstall_version = new_resource.version || current_installed_version
             uninstall_entries.select { |entry| [uninstall_version].flatten.include?(entry.display_version) }
-                             .map(&:uninstall_string).uniq.each do |uninstall_string|
+              .map(&:uninstall_string).uniq.each do |uninstall_string|
               Chef::Log.debug("Registry provided uninstall string for #{new_resource} is '#{uninstall_string}'")
               shell_out!(uninstall_command(uninstall_string), timeout: new_resource.timeout, returns: new_resource.returns)
             end
@@ -81,7 +88,7 @@ class Chef
             uninstall_string = "\"#{uninstall_string}\"" if ::File.exist?(uninstall_string)
             uninstall_string = [
               uninstall_string,
-              expand_options(new_resource.options),
+              *options,
               " ",
               unattended_flags,
             ].join

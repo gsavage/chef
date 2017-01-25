@@ -83,7 +83,7 @@ class Chef
         end
 
         def install_package(name, version)
-          shell_out_compact_timeout!( "pacman", "--sync", "--noconfirm", "--noprogressbar", new_resource.options, name)
+          shell_out_compact_timeout!( "pacman", "--sync", "--noconfirm", "--noprogressbar", options, name)
         end
 
         def upgrade_package(name, version)
@@ -91,7 +91,7 @@ class Chef
         end
 
         def remove_package(name, version)
-          shell_out_compact_timeout!( "pacman", "--remove", "--noconfirm", "--noprogressbar", new_resource.options, name )
+          shell_out_compact_timeout!( "pacman", "--remove", "--noconfirm", "--noprogressbar", options, name )
         end
 
         def purge_package(name, version)

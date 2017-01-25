@@ -113,7 +113,7 @@ class Chef
             pkg = "~#{name}-#{$1}"
           end
 
-          shell_out_compact!( "emerge", "-g", "--color", "n", "--nospinner", "--quiet", new_resource.options, pkg )
+          shell_out_compact!( "emerge", "-g", "--color", "n", "--nospinner", "--quiet", options, pkg )
         end
 
         def upgrade_package(name, version)
@@ -127,7 +127,7 @@ class Chef
                   new_resource.package_name.to_s
                 end
 
-          shell_out_compact!( "emerge", "--unmerge", "--color", "n", "--nospinner", "--quiet", new_resource.options, pkg )
+          shell_out_compact!( "emerge", "--unmerge", "--color", "n", "--nospinner", "--quiet", options, pkg )
         end
 
         def purge_package(name, version)

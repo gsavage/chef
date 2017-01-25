@@ -28,17 +28,17 @@ class Chef
             unless current_resource.version
               case new_resource.source
               when /^(http|ftp|\/)/
-                shell_out_compact_timeout!("pkg", "add", new_resource.options, new_resource.source, env: { "LC_ALL" => nil }).status
+                shell_out_compact_timeout!("pkg", "add", options, new_resource.source, env: { "LC_ALL" => nil }).status
                 Chef::Log.debug("#{new_resource} installed from: #{new_resource.source}")
               else
-                shell_out_compact_timeout!("pkg", "install", "-y", new_resource.options, name, env: { "LC_ALL" => nil }).status
+                shell_out_compact_timeout!("pkg", "install", "-y", options, name, env: { "LC_ALL" => nil }).status
               end
             end
           end
 
           def remove_package(name, version)
-            options = new_resource.options && new_resource.options.map { |str| str.sub(repo_regex, "") }.reject! { |str| str.empty? }
-            shell_out_compact_timeout!("pkg", "delete", "-y", options, "#{name}#{version ? '-' + version : ''}", env: nil).status
+            options_dup = options && options.map { |str| str.sub(repo_regex, "") }.reject! { |str| str.empty? }
+            shell_out_compact_timeout!("pkg", "delete", "-y", options_dup, "#{name}#{version ? '-' + version : ''}", env: nil).status
           end
 
           def current_installed_version
@@ -57,7 +57,7 @@ class Chef
           end
 
           def repo_candidate_version
-            if new_resource.options && new_resource.options.join(" ").match(repo_regex)
+            if options && options.join(" ").match(repo_regex)
               options = $1.split(" ")
             end
 

@@ -52,6 +52,17 @@ class Chef
         @candidate_version = nil
       end
 
+      def options
+        if new_resource.options.is_a?(String)
+          # XXX: needs to handle double quotes, single quotes, nested quotes, etc and probably act
+          # more like a space-separated "C"SV file -- although users can fix this just by passing in
+          # a correctly pre-split Array.
+          new_resource.options.split(" ")
+        else
+          new_resource.options
+        end
+      end
+
       def whyrun_supported?
         true
       end

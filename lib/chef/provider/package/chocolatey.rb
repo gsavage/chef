@@ -205,7 +205,7 @@ EOS
         # @param include_source [Boolean] should the source parameter be added
         # @return [String] options from new_resource or empty string
         def cmd_args(include_source: true)
-          cmd_args = new_resource.options || []
+          cmd_args = options || []
           cmd_args += [ "-source", new_resource.source ] if new_resource.source && include_source
           cmd_args
         end

@@ -100,8 +100,8 @@ class Chef
         end
 
         def install_package(name, version)
-          Chef::Log.debug("#{new_resource} package install options: #{new_resource.options}")
-          if new_resource.options.nil?
+          Chef::Log.debug("#{new_resource} package install options: #{options}")
+          if options.nil?
             command = if ::File.directory?(new_resource.source) # CHEF-4469
                         [ "pkgadd", "-n", "-d", new_resource.source, new_resource.package_name ]
                       else
@@ -111,9 +111,9 @@ class Chef
             Chef::Log.debug("#{new_resource} installed version #{new_resource.version} from: #{new_resource.source}")
           else
             command = if ::File.directory?(new_resource.source) # CHEF-4469
-                        [ "pkgadd", "-n", new_resource.options, "-d", new_resource.source, new_resource.package_name ]
+                        [ "pkgadd", "-n", options, "-d", new_resource.source, new_resource.package_name ]
                       else
-                        [ "pkgadd", "-n", new_resource.options, "-d", new_resource.source, "all" ]
+                        [ "pkgadd", "-n", options, "-d", new_resource.source, "all" ]
                       end
             shell_out_compact_timeout!(*command)
             Chef::Log.debug("#{new_resource} installed version #{new_resource.version} from: #{new_resource.source}")
@@ -123,11 +123,11 @@ class Chef
         alias upgrade_package install_package
 
         def remove_package(name, version)
-          if new_resource.options.nil?
+          if options.nil?
             shell_out_compact_timeout!( "pkgrm", "-n", name )
             Chef::Log.debug("#{new_resource} removed version #{new_resource.version}")
           else
-            shell_out_compact_timeout!( "pkgrm", "-n", new_resource.options, name )
+            shell_out_compact_timeout!( "pkgrm", "-n", options, name )
             Chef::Log.debug("#{new_resource} removed version #{new_resource.version}")
           end
         end

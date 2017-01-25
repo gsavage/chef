@@ -138,9 +138,9 @@ class Chef
             @yum.reload
           end
 
-          if new_resource.options
+          if options
             repo_control = []
-            new_resource.options.each do |opt|
+            options.each do |opt|
               if opt =~ /--(enable|disable)repo=.+/
                 repo_control << opt
               end
@@ -296,7 +296,7 @@ class Chef
               pkg_string_bits << s
             end
             Chef::Log.info("#{new_resource} #{log_method} #{repos.join(' ')}")
-            yum_command("-d0", "-e0", "-y", new_resource.options, method, *pkg_string_bits)
+            yum_command("-d0", "-e0", "-y", options, method, *pkg_string_bits)
           else
             raise Chef::Exceptions::Package, "Version #{version} of #{name} not found. Did you specify both version " \
               "and release? (version-release, e.g. 1.84-10.fc6)"
@@ -305,7 +305,7 @@ class Chef
 
         def install_package(name, version)
           if new_resource.source
-            yum_command("-d0", "-e0", "-y", new_resource.options, "localinstall", new_resource.source)
+            yum_command("-d0", "-e0", "-y", options, "localinstall", new_resource.source)
           else
             install_remote_package(name, version)
           end
@@ -353,7 +353,7 @@ class Chef
                            "#{n}#{yum_arch(a)}"
                          end.join(" ")
                        end
-          yum_command("-d0", "-e0", "-y", new_resource.options, "remove", remove_str)
+          yum_command("-d0", "-e0", "-y", options, "remove", remove_str)
 
           if flush_cache[:after]
             @yum.reload
@@ -367,11 +367,11 @@ class Chef
         end
 
         def lock_package(name, version)
-          yum_command("-d0", "-e0", "-y", new_resource.options, "versionlock", "add", name)
+          yum_command("-d0", "-e0", "-y", options, "versionlock", "add", name)
         end
 
         def unlock_package(name, version)
-          yum_command("-d0", "-e0", "-y", new_resource.options, "versionlock", "delete", name)
+          yum_command("-d0", "-e0", "-y", options, "versionlock", "delete", name)
         end
 
         private

@@ -113,7 +113,7 @@ class Chef
 
         def install_package(name, version)
           Chef.deprecated(:easy_install, "The easy_install package provider is deprecated and will be removed in Chef 13.")
-          shell_out_compact_timeout!(easy_install_binary_path, new_resource.options, "#{name}==#{version}")
+          shell_out_compact_timeout!(easy_install_binary_path, options, "#{name}==#{version}")
         end
 
         def upgrade_package(name, version)
@@ -122,7 +122,7 @@ class Chef
 
         def remove_package(name, version)
           Chef.deprecated(:easy_install, "The easy_install package provider is deprecated and will be removed in Chef 13.")
-          shell_out_compact_timeout!(easy_install_binary_path, new_resource.options, "-m", name)
+          shell_out_compact_timeout!(easy_install_binary_path, options, "-m", name)
         end
 
         def purge_package(name, version)

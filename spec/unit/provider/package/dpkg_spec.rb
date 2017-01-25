@@ -215,7 +215,7 @@ Section: ruby
   describe Chef::Provider::Package::Dpkg, "install and upgrade" do
     it "should run dpkg -i with the package source" do
       expect(provider).to receive(:run_noninteractive).with(
-        "dpkg", "-i", nil, "/tmp/wget_1.11.4-1ubuntu1_amd64.deb"
+        "dpkg", "-i", "/tmp/wget_1.11.4-1ubuntu1_amd64.deb"
       )
       provider.load_current_resource
       provider.run_action(:install)
@@ -224,7 +224,7 @@ Section: ruby
     it "should run dpkg -i if the package is a path and the source is nil" do
       new_resource.name "/tmp/wget_1.11.4-1ubuntu1_amd64.deb"
       expect(provider).to receive(:run_noninteractive).with(
-        "dpkg", "-i", nil, "/tmp/wget_1.11.4-1ubuntu1_amd64.deb"
+        "dpkg", "-i", "/tmp/wget_1.11.4-1ubuntu1_amd64.deb"
       )
       provider.run_action(:install)
     end
@@ -232,7 +232,7 @@ Section: ruby
     it "should run dpkg -i if the package is a path and the source is nil for an upgrade" do
       new_resource.name "/tmp/wget_1.11.4-1ubuntu1_amd64.deb"
       expect(provider).to receive(:run_noninteractive).with(
-        "dpkg", "-i", nil, "/tmp/wget_1.11.4-1ubuntu1_amd64.deb"
+        "dpkg", "-i", "/tmp/wget_1.11.4-1ubuntu1_amd64.deb"
       )
       provider.run_action(:upgrade)
     end
@@ -240,7 +240,7 @@ Section: ruby
     it "should run dpkg -i with the package source and options if specified" do
       new_resource.options "--force-yes"
       expect(provider).to receive(:run_noninteractive).with(
-        "dpkg", "-i", [ "--force-yes" ], "/tmp/wget_1.11.4-1ubuntu1_amd64.deb"
+        "dpkg", "-i", "--force-yes", "/tmp/wget_1.11.4-1ubuntu1_amd64.deb"
       )
       provider.run_action(:install)
     end
@@ -254,7 +254,7 @@ Section: ruby
   describe Chef::Provider::Package::Dpkg, "remove and purge" do
     it "should run dpkg -r to remove the package" do
       expect(provider).to receive(:run_noninteractive).with(
-        "dpkg", "-r", nil, "wget"
+        "dpkg", "-r", "wget"
       )
       provider.remove_package(["wget"], ["1.11.4-1ubuntu1"])
     end
@@ -270,7 +270,7 @@ Section: ruby
 
     it "should run dpkg -P to purge the package" do
       expect(provider).to receive(:run_noninteractive).with(
-        "dpkg", "-P", nil, "wget"
+        "dpkg", "-P", "wget"
       )
       provider.purge_package(["wget"], ["1.11.4-1ubuntu1"])
     end

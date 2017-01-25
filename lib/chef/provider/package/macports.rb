@@ -47,20 +47,20 @@ class Chef
 
         def install_package(name, version)
           unless current_resource.version == version
-            command = [ "port", new_resource.options, "install", name ]
+            command = [ "port", options, "install", name ]
             command << "@#{version}" if version && !version.empty?
             shell_out_compact_timeout!(command)
           end
         end
 
         def purge_package(name, version)
-          command = [ "port", new_resource.options, "uninstall", name ]
+          command = [ "port", options, "uninstall", name ]
           command << "@#{version}" if version && !version.empty?
           shell_out_compact_timeout!(command)
         end
 
         def remove_package(name, version)
-          command = [ "port", new_resource.options, "deactivate", name ]
+          command = [ "port", options, "deactivate", name ]
           command << "@#{version}" if version && !version.empty?
 
           shell_out_compact_timeout!(command)
@@ -76,7 +76,7 @@ class Chef
             # that hasn't been installed.
             install_package(name, version)
           elsif current_version != version
-            shell_out_compact_timeout!( "port", new_resource.options, "upgrade", name, "@#{version}" )
+            shell_out_compact_timeout!( "port", options, "upgrade", name, "@#{version}" )
           end
         end
 

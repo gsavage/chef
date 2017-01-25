@@ -66,7 +66,7 @@ class Chef
         end
 
         def install_package(name, version)
-          command = [ "pkg", new_resource.options, "install", "-q" ]
+          command = [ "pkg", options, "install", "-q" ]
           command << "--accept" if new_resource.accept_license
           command << "#{name}@#{version}"
           shell_out_compact_timeout(command)
@@ -78,7 +78,7 @@ class Chef
 
         def remove_package(name, version)
           package_name = "#{name}@#{version}"
-          shell_out_compact_timeout!( "pkg", new_resource.options, "uninstall", "-q", package_name )
+          shell_out_compact_timeout!( "pkg", options, "uninstall", "-q", package_name )
         end
       end
     end

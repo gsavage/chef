@@ -89,12 +89,12 @@ class Chef
         def install_package(name, version)
           if current_resource.version
             if allow_downgrade
-              shell_out_compact_timeout!("rpm", new_resource.options, "-U", "--oldpackage", new_resource.source)
+              shell_out_compact_timeout!("rpm", options, "-U", "--oldpackage", new_resource.source)
             else
-              shell_out_compact_timeout!("rpm", new_resource.options, "-U", new_resource.source)
+              shell_out_compact_timeout!("rpm", options, "-U", new_resource.source)
             end
           else
-            shell_out_compact_timeout!("rpm", new_resource.options, "-i", new_resource.source)
+            shell_out_compact_timeout!("rpm", options, "-i", new_resource.source)
           end
         end
 
@@ -102,9 +102,9 @@ class Chef
 
         def remove_package(name, version)
           if version
-            shell_out_compact_timeout!("rpm", new_resource.options, "-e", "#{name}-#{version}")
+            shell_out_compact_timeout!("rpm", options, "-e", "#{name}-#{version}")
           else
-            shell_out_compact_timeout!("rpm", new_resource.options, "-e", name)
+            shell_out_compact_timeout!("rpm", options, "-e", name)
           end
         end
 

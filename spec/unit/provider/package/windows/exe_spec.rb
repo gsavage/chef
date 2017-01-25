@@ -62,16 +62,6 @@ describe Chef::Provider::Package::Windows::Exe do
     expect(provider).to respond_to(:shell_out!)
   end
 
-  describe "expand_options" do
-    it "returns an empty string if passed no options" do
-      expect(provider.expand_options(nil)).to eql ""
-    end
-
-    it "returns a string with a leading space if passed options" do
-      expect(provider.expand_options("--train nope --town no_way")).to eql(" --train nope --town no_way")
-    end
-  end
-
   describe "installed_version" do
     it "returns the installed version" do
       expect(provider.installed_version).to eql(["outdated"])
@@ -167,7 +157,7 @@ describe Chef::Provider::Package::Windows::Exe do
     let(:provider) { Chef::Provider::Package::Windows::Exe.new(new_resource, :nsis, uninstall_entry) }
 
     it "calls installer with the correct flags" do
-      expect(provider).to receive(:shell_out!).with(/start \"\" \/wait \"#{Regexp.quote(new_resource.source)}\" \/S \/NCRC  & exit %%%%ERRORLEVEL%%%%/, kind_of(Hash))
+      expect(provider).to receive(:shell_out!).with(/start \"\" \/wait \"#{Regexp.quote(new_resource.source)}\" \/S \/NCRC & exit %%%%ERRORLEVEL%%%%/, kind_of(Hash))
       provider.install_package
     end
   end
@@ -176,7 +166,7 @@ describe Chef::Provider::Package::Windows::Exe do
     let(:provider) { Chef::Provider::Package::Windows::Exe.new(new_resource, :installshield, uninstall_entry) }
 
     it "calls installer with the correct flags" do
-      expect(provider).to receive(:shell_out!).with(/start \"\" \/wait \"#{Regexp.quote(new_resource.source)}\" \/s \/sms  & exit %%%%ERRORLEVEL%%%%/, kind_of(Hash))
+      expect(provider).to receive(:shell_out!).with(/start \"\" \/wait \"#{Regexp.quote(new_resource.source)}\" \/s \/sms & exit %%%%ERRORLEVEL%%%%/, kind_of(Hash))
       provider.install_package
     end
   end
@@ -185,7 +175,7 @@ describe Chef::Provider::Package::Windows::Exe do
     let(:provider) { Chef::Provider::Package::Windows::Exe.new(new_resource, :inno, uninstall_entry) }
 
     it "calls installer with the correct flags" do
-      expect(provider).to receive(:shell_out!).with(/start \"\" \/wait \"#{Regexp.quote(new_resource.source)}\" \/VERYSILENT \/SUPPRESSMSGBOXES \/NORESTART  & exit %%%%ERRORLEVEL%%%%/, kind_of(Hash))
+      expect(provider).to receive(:shell_out!).with(/start \"\" \/wait \"#{Regexp.quote(new_resource.source)}\" \/VERYSILENT \/SUPPRESSMSGBOXES \/NORESTART & exit %%%%ERRORLEVEL%%%%/, kind_of(Hash))
       provider.install_package
     end
   end
@@ -194,7 +184,7 @@ describe Chef::Provider::Package::Windows::Exe do
     let(:provider) { Chef::Provider::Package::Windows::Exe.new(new_resource, :wise, uninstall_entry) }
 
     it "calls installer with the correct flags" do
-      expect(provider).to receive(:shell_out!).with(/start \"\" \/wait \"#{Regexp.quote(new_resource.source)}\" \/s  & exit %%%%ERRORLEVEL%%%%/, kind_of(Hash))
+      expect(provider).to receive(:shell_out!).with(/start \"\" \/wait \"#{Regexp.quote(new_resource.source)}\" \/s & exit %%%%ERRORLEVEL%%%%/, kind_of(Hash))
       provider.install_package
     end
   end

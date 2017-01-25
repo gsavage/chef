@@ -46,7 +46,7 @@ class Chef
 
         def install_package(name, version)
           unless current_resource.version == version
-            brew("install", new_resource.options, name)
+            brew("install", options, name)
           end
         end
 
@@ -56,20 +56,20 @@ class Chef
           if current_version.nil? || current_version.empty?
             install_package(name, version)
           elsif current_version != version
-            brew("upgrade", new_resource.options, name)
+            brew("upgrade", options, name)
           end
         end
 
         def remove_package(name, version)
           if current_resource.version
-            brew("uninstall", new_resource.options, name)
+            brew("uninstall", options, name)
           end
         end
 
         # Homebrew doesn't really have a notion of purging, do a "force remove"
         def purge_package(name, version)
           if current_resource.version
-            brew("uninstall", "--force", new_resource.options, name)
+            brew("uninstall", "--force", options, name)
           end
         end
 

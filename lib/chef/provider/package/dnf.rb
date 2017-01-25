@@ -86,10 +86,10 @@ class Chef
 
         def install_package(names, versions)
           if new_resource.source
-            dnf(new_resource.options, "-y install", new_resource.source)
+            dnf(options, "-y install", new_resource.source)
           else
             resolved_names = names.each_with_index.map { |name, i| available_version(i).to_s unless name.nil? }
-            dnf(new_resource.options, "-y install", resolved_names)
+            dnf(options, "-y install", resolved_names)
           end
           flushcache
         end
@@ -99,7 +99,7 @@ class Chef
 
         def remove_package(names, versions)
           resolved_names = names.each_with_index.map { |name, i| installed_version(i).to_s unless name.nil? }
-          dnf(new_resource.options, "-y remove", resolved_names)
+          dnf(options, "-y remove", resolved_names)
           flushcache
         end
 
