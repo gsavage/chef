@@ -347,7 +347,7 @@ GEM
     parser (2.3.3.1)
       ast (~> 2.2)
     plist (3.2.0)
-    poise (2.7.1)
+    poise (2.7.2)
       halite (~> 1.0)
     poise-boiler (1.13.2)
       bundler
