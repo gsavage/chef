@@ -80,7 +80,7 @@ class Chef
         set_or_return(
           :cwd,
           arg,
-          :kind_of => [ String ]
+          :kind_of => [ String, Pathname ]
         )
       end
 
