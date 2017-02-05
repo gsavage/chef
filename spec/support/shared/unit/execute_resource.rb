@@ -56,6 +56,11 @@ shared_examples_for "an execute resource" do
     expect(@resource.cwd).to eql("something")
   end
 
+  it "should accept a pathname for the cwd" do
+    @resource.cwd Pathname.new("something")
+    expect(@resource.cwd).to eql(Pathname.new("something"))
+  end
+
   it "should accept a hash for the environment" do
     test_hash = { :one => :two }
     @resource.environment(test_hash)
